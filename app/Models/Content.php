@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,13 +11,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
-// 1. Import the Str facade
-
 #[Fillable([
-    'title', 'description', 'slug', 'content', 'is_frontpage',
-    'image', 'published', 'published_at',
+    'title', 'slug', 'content',
     'seo', 'meta', 'setting',
-    'created_by', 'updated_by', 'deleted_by',
+    'created_by',
 ])]
 class Content extends Model
 {
@@ -26,69 +24,105 @@ class Content extends Model
     {
         return [
             'content' => 'array',
-            'published' => 'boolean',
+            'seo' => 'array',
             'meta' => 'array',
             'setting' => 'array',
-            'seo' => 'array',
         ];
     }
 
     protected static function booted(): void
     {
         static::saving(function (Content $content) {
-            // 1. Assign authenticated user ID (only on initial creation)
+            // Automatically record creator ID if available
             if (!$content->exists && Auth::check() && !$content->created_by) {
                 $content->created_by = Auth::id();
             }
 
-            // 2. Handle exclusive Frontpage logic
-            if ($content->is_frontpage) {
-                $frontpageQuery = static::where('is_frontpage', true);
+            // Check frontpage flag exclusively inside the 'setting' JSON array
+            $setting = $content->setting ?? [];
+            $isFrontpage = !empty($setting['is_frontpage']);
 
-                if ($content->exists) {
-                    $frontpageQuery->where($content->getKeyName(), '!=', $content->getKey());
+            if ($isFrontpage) {
+                static::query()
+                    ->when($content->exists, fn ($q) => $q->where($content->getKeyName(), '!=', $content->getKey()))
+                    ->where(function ($q) {
+                        $q->where('setting->is_frontpage', true)
+                            ->orWhere('setting->is_frontpage', 1);
+                    })
+                    ->get()
+                    ->each(function ($model) {
+                        $currentSettings = $model->setting ?? [];
+                        $currentSettings['is_frontpage'] = false;
+                        $model->setting = $currentSettings;
+                        $model->saveQuietly();
+                    });
+            }
+
+            // Slug Auto-generation
+            if (!$content->slug || $content->isDirty('title') || $content->isDirty('slug')) {
+                $sourceString = $content->slug ?: $content->title;
+                $slug = Str::slug($sourceString);
+                $originalSlug = $slug;
+                $count = 1;
+
+                while (
+                static::withTrashed()
+                    ->where('slug', $slug)
+                    ->when($content->exists, fn ($q) => $q->where($content->getKeyName(), '!=', $content->getKey()))
+                    ->exists()
+                ) {
+                    $slug = "{$originalSlug}-{$count}";
+                    $count++;
                 }
 
-                // Turn off frontpage flag for all other items
-                $frontpageQuery->update(['is_frontpage' => false]);
+                $content->slug = $slug;
             }
+        });
+    }
 
-            // 3. Determine our starting slug string
-            $sourceString = $content->slug ?: $content->title;
+    /**
+     * Fallback Magic Getter to safely read nested JSON fields (seo, setting, meta)
+     */
+    public function __get($key)
+    {
+        // Safely retrieve from cast 'seo' array
+        $seo = $this->getAttribute('seo');
+        if (is_array($seo) && array_key_exists($key, $seo)) {
+            return $seo[$key];
+        }
 
-            // 4. Clean it up: converts spaces to hyphens, lowers casing, strips special characters
-            $slug = Str::slug($sourceString);
-            $originalSlug = $slug;
-            $count = 1;
+        // Safely retrieve from cast 'setting' array
+        $setting = $this->getAttribute('setting');
+        if (is_array($setting) && array_key_exists($key, $setting)) {
+            return $setting[$key];
+        }
 
-            // 5. Safely build the query builder instance
-            $query = method_exists(static::class, 'bootSoftDeletes') ? static::withTrashed() : static::query();
+        // Safely retrieve from cast 'meta' array
+        $meta = $this->getAttribute('meta');
+        if (is_array($meta) && array_key_exists($key, $meta)) {
+            return $meta[$key];
+        }
 
-            // 6. Exclude the current record from the unique check if it already exists
-            if ($content->exists) {
-                $query->where($content->getKeyName(), '!=', $content->getKey());
-            }
+        return parent::__get($key);
+    }
 
-            // 7. Loop safely to check both live and soft-deleted items
-            while ($query->clone()->where('slug', $slug)->exists()) {
-                $slug = "{$originalSlug}-{$count}";
-                $count++;
-            }
-            $content->slug = $slug;
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    /**
+     * Scope query to only include frontpage content (targets setting JSON)
+     */
+    public function scopeFrontpage(Builder $query): Builder
+    {
+        return $query->where(function ($q) {
+            $q->where('setting->is_frontpage', true)
+                ->orWhere('setting->is_frontpage', 1);
         });
     }
 
     public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function updatedBy(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function deletedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }

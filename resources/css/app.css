@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin "@tailwindcss/typography";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -6,4 +7,27 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* 1. Tell Tailwind to scan Filament schemas and components */
+@source "../../app/Filament/**/*.php";
+@source "../../app/Filament/**/*.php";
+@source "../../resources/views/**/*.blade.php";
+
+/* 2. Custom utilities for Aspect Ratios */
+@utility aspect-square {
+    aspect-ratio: 1 / 1;
+}
+@utility aspect-video {
+    aspect-ratio: 16 / 9;
+}
+@utility aspect-4-3 {
+    aspect-ratio: 4 / 3;
+}
+@utility aspect-auto {
+    aspect-ratio: auto;
+}
+
+[x-cloak] {
+    display: none !important;
 }

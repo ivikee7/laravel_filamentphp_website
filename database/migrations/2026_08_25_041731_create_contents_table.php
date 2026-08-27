@@ -17,14 +17,8 @@ return new class extends Migration
 
             // Core Content
             $table->string('title');
-            $table->string('description');
             $table->string('slug')->unique();
             $table->json('content')->nullable();
-            $table->string('image')->nullable();
-
-            // Publication Control
-            $table->boolean('published')->default(false)->index();
-            $table->timestamp('published_at')->nullable()->index(); // Allows scheduling posts for the future
 
             // SEO & Metadata Optimizer Fields
             $table->json('seo')->nullable();
@@ -32,9 +26,6 @@ return new class extends Migration
             // Flexibility
             $table->json('meta')->nullable();
             $table->json('setting')->nullable();
-
-            // Frontpage
-            $table->boolean('is_frontpage')->default(false)->index();
 
             // Ownership & Relations
             $table->foreignId('created_by')->nullable()->index();

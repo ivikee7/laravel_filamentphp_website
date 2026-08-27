@@ -17,6 +17,7 @@ class ContentInfolist
         return $schema
             ->components([
                 Section::make('Content')->schema([
+                    TextEntry::make('content'),
                     RepeatableEntry::make('content')
                         ->hiddenLabel()
                         ->schema([
