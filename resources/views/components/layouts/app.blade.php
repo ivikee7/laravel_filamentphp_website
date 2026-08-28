@@ -4,17 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    {{-- CRITICAL: Tells Vite to load and live-compile styles during "php artisan dev" --}}
+    {{-- CRITICAL: Live Vite asset loading --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    {{-- Safe Null Coalescing for $page --}}
+    {{-- Title Tag --}}
     <title>{{ $page?->seo_title ?? $page?->title ?? config('app.name') }}</title>
 
+    {{-- Meta Description --}}
     @if(!empty($page?->seo_description))
         <meta name="description" content="{{ $page->seo_description }}">
     @endif
 
-    {{-- Safe Keywords Processing --}}
+    {{-- Keywords Tag --}}
     @if(!empty($page?->seo_keywords))
         @php
             $keywords = is_array($page->seo_keywords)
@@ -26,9 +27,10 @@
         @endif
     @endif
 
+    {{-- Canonical URL --}}
     <link rel="canonical" href="{{ $page->canonical_url ?? url()->current() }}">
 
-    {{-- Meta Robots --}}
+    {{-- Meta Robots & Crawl Control --}}
     @php
         $robots = [];
         $robots[] = ($page->is_indexable ?? true) ? 'index' : 'noindex';
@@ -39,7 +41,7 @@
     @endphp
     <meta name="robots" content="{{ implode(', ', $robots) }}">
 
-    {{-- OpenGraph Meta --}}
+    {{-- OpenGraph Social Metadata --}}
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="{{ config('app.name') }}">
     <meta property="og:title" content="{{ $page->og_title ?? $page->seo_title ?? $page->title ?? config('app.name') }}">
@@ -49,7 +51,7 @@
         <meta property="og:image" content="{{ asset('storage/' . $page->og_image) }}">
     @endif
 
-    {{-- Twitter Meta --}}
+    {{-- Twitter / X Metadata --}}
     <meta name="twitter:card" content="{{ $page->twitter_card_type ?? 'summary_large_image' }}">
     <meta name="twitter:title" content="{{ $page->twitter_title ?? $page->og_title ?? $page->seo_title ?? $page->title ?? config('app.name') }}">
     <meta name="twitter:description" content="{{ $page->og_description ?? $page->seo_description ?? '' }}">
@@ -57,12 +59,12 @@
         <meta name="twitter:image" content="{{ asset('storage/' . $page->og_image) }}">
     @endif
 
-    {{-- Custom Key-Value Meta Tags --}}
+    {{-- Custom Key-Value Meta Injections --}}
     @foreach($page->custom_meta_tags ?? [] as $name => $content)
         <meta name="{{ $name }}" content="{{ $content }}">
     @endforeach
 
-    {{-- Header Scripts --}}
+    {{-- Head Script Injection (<head>) --}}
     @if(!empty($page?->header_scripts))
         {!! $page->header_scripts !!}
     @endif
@@ -74,12 +76,14 @@
         </script>
     @endif
 </head>
-<body class="antialiased">
+<body class="bg-white text-slate-900 antialiased min-h-screen flex flex-col justify-between">
 
-<x-section.top-bar />
-<x-section.header />
+{{-- Header & Navigation --}}
+@includeIf('components.section.top-bar')
+@includeIf('components.section.header')
 
-<main>
+{{-- Main Dynamic Content Area (Supports Slot & Yield) --}}
+<main class="flex-grow w-full">
     @if(isset($slot) && $slot->isNotEmpty())
         {{ $slot }}
     @else
@@ -87,11 +91,13 @@
     @endif
 </main>
 
-<x-section.footer />
+{{-- Footer --}}
+@includeIf('components.section.footer')
 
-{{-- Footer Scripts --}}
+{{-- Body/Footer Script Injection (</body>) --}}
 @if(!empty($page?->footer_scripts))
     {!! $page->footer_scripts !!}
 @endif
+
 </body>
 </html>

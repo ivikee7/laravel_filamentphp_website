@@ -17,55 +17,78 @@ class PageSettingsSchema
 {
     public static function make(): Group
     {
-        // Bind all setting fields directly into the 'setting' JSON database column
         return Group::make()
             ->statePath('setting')
             ->schema([
                 Tabs::make('Technical Page Settings')
                     ->tabs([
-                        // General & Status
+                        // 1. General Status & Routing Control
                         Tab::make('General Status')
                             ->icon('heroicon-o-cog-6-tooth')
                             ->schema([
                                 Grid::make(3)->schema([
                                     Select::make('status')
+                                        ->label('Publication Status')
                                         ->options([
                                             'draft' => 'Draft',
                                             'published' => 'Published',
                                             'archived' => 'Archived',
-                                        ])->default('draft'),
-                                    DateTimePicker::make('published_at')->label('Publish Date'),
+                                        ])
+                                        ->default('draft')
+                                        ->required(),
+
+                                    DateTimePicker::make('published_at')
+                                        ->label('Publish Date / Schedule')
+                                        ->seconds(false)
+                                        ->helperText('Leave empty to publish immediately upon saving.'),
+
                                     Select::make('template')
+                                        ->label('Page Template')
                                         ->options([
                                             'default' => 'Default Canvas Layout',
                                             'full_width' => 'Full Width Canvas',
                                             'sidebar' => 'With Sidebar',
-                                        ])->default('default'),
+                                        ])
+                                        ->default('default'),
                                 ]),
-                                Grid::make(2)->schema([
-                                    Toggle::make('requires_auth')
-                                        ->label('Restrict Access (Auth Required)')
+
+                                Grid::make(3)->schema([
+                                    Toggle::make('is_frontpage')
+                                        ->label('Set as Homepage')
+                                        ->helperText('Designates this page as the main root URL content.')
                                         ->default(false),
+
+                                    Toggle::make('requires_auth')
+                                        ->label('Restrict Access')
+                                        ->helperText('Requires users to be logged in to view.')
+                                        ->default(false),
+
                                     TextInput::make('password_protection')
-                                        ->label('Page Password Protection')
+                                        ->label('Password Protection')
+                                        ->placeholder('Optional page password')
                                         ->password(),
                                 ]),
                             ]),
 
-                        // Custom Scripts & Meta
+                        // 2. Custom Script & Meta Injections
                         Tab::make('Code Injection')
                             ->icon('heroicon-o-code-bracket')
                             ->schema([
                                 Textarea::make('header_scripts')
                                     ->label('Head Script Injection (<head>)')
+                                    ->placeholder('<script>/* Analytics tracking or custom head tags */</script>')
                                     ->rows(4),
+
                                 Textarea::make('footer_scripts')
-                                    ->label('Footer Script Injection (</body>)')
+                                    ->label('Footer Script Injection (before </body>)')
+                                    ->placeholder('<script>/* Chat widget or conversion pixels */</script>')
                                     ->rows(4),
+
                                 KeyValue::make('custom_meta_tags')
-                                    ->label('Custom Meta Tags (Key => Value)')
-                                    ->keyLabel('Meta Property Name')
-                                    ->valueLabel('Content'),
+                                    ->label('Custom Meta Tags')
+                                    ->keyLabel('Meta Name / Property')
+                                    ->valueLabel('Content')
+                                    ->reorderable(),
                             ]),
                     ]),
             ]);
