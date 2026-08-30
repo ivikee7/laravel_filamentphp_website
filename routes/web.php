@@ -8,11 +8,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Home Page (Fetches is_frontpage content via HomeController)
-Route::get('/', HomeController::class)->name('home');
+// 1. Homepage / Dynamic Frontpage
+Route::get('/', [ContentController::class, 'home'])->name('home');
 
-// Content Routes
-Route::prefix('content')->name('content.')->group(function () {
-    Route::get('/', [ContentController::class, 'index'])->name('index');
-    Route::get('/{content:slug}', [ContentController::class, 'show'])->name('show');
-});
+// 2. Directory Listing
+Route::get('/content', [ContentController::class, 'index'])->name('content.index');
+
+// 3. Single Content / Sub-pages
+Route::match(['get', 'post'], '/content/{slug}', [ContentController::class, 'show'])->name('content.show');

@@ -11,6 +11,7 @@ use App\Filament\Resources\Tags\Schemas\TagInfolist;
 use App\Filament\Resources\Tags\Tables\TagsTable;
 use App\Models\Tag;
 use BackedEnum;
+use Filament\Pages\Enums\SubNavigationPosition;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -22,7 +23,7 @@ class TagResource extends Resource
 {
     protected static ?string $model = Tag::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
     public static function form(Schema $schema): Schema
     {

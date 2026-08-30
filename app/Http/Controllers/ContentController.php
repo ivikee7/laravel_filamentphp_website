@@ -2,98 +2,172 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Content;
+use App\Models\Tag;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\View\View;
 
 class ContentController extends Controller
 {
     /**
-     * Display a paginated listing of content with optional search.
+     * Display the dynamic homepage / frontpage.
      */
-    public function index(Request $request): View
+    public function home(Request $request)
     {
-        $query = Content::query()
-            // 1. Check publication status inside JSON settings or root column
+        $page = Content::frontpage()
             ->where(function ($q) {
-                $q->where('setting->published', true)
-                    ->orWhere('setting->published', 1)
-                    ->orWhere('setting->status', 'published')
-                    ->orWhere('published', true);
+                $q->where('setting->status', 'published')
+                    ->orWhereNull('setting->status');
             })
-            // 2. Check published_at date inside JSON settings or root column
             ->where(function ($q) {
                 $q->whereNull('setting->published_at')
-                    ->orWhere('setting->published_at', '')
-                    ->orWhere('setting->published_at', '<=', now())
-                    ->orWhereNull('published_at')
-                    ->orWhere('published_at', '<=', now());
+                    ->orWhere('setting->published_at', '<=', now()->toDateTimeString());
             })
-            ->latest('created_at');
+            ->first();
 
-        if ($request->filled('search')) {
-            $searchTerm = $request->input('search');
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('title', 'like', "%{$searchTerm}%")
-                    ->orWhere('content', 'like', "%{$searchTerm}%");
-            });
+        if (!$page) {
+            return $this->index($request);
         }
 
-        $contents = $query->paginate(12)->withQueryString();
+        $meta = $page->meta ?? [];
+        $settings = $page->setting ?? [];
 
-        $page = (object) [
-            'title' => 'All Content',
-            'seo_title' => 'All Content & Articles',
-            'seo_description' => 'Browse our latest published content.',
-            'is_indexable' => true,
-            'is_followable' => true,
-        ];
+        // 1. Handle Canonical / 301 Redirects
+        if (!empty($meta['redirect_url'])) {
+            return redirect($meta['redirect_url'], (int) ($meta['redirect_code'] ?? 301));
+        }
 
-        return view('content.index', compact('contents', 'page'));
+        // 2. Handle Password Gate ONLY if requires_auth is true
+        if (!empty($settings['requires_auth']) && !empty($settings['password_protection'])) {
+            $sessionKey = 'content_auth_' . $page->id;
+
+            if (!$request->session()->has($sessionKey)) {
+                if ($request->isMethod('post')) {
+                    if ($request->input('password') === $settings['password_protection']) {
+                        $request->session()->put($sessionKey, true);
+                        return redirect()->route('home');
+                    }
+
+                    return response()->view('content.password', [
+                        'content' => $page,
+                        'error'   => 'Incorrect password. Please try again.',
+                    ], 403);
+                }
+
+                return response()->view('content.password', ['content' => $page]);
+            }
+        }
+
+        return view('home', [
+            'page' => $page,
+        ]);
     }
 
     /**
-     * Display a specific content item by slug.
+     * Display searchable directory of published content.
      */
-    public function show(Content $content): View
+    public function index(Request $request)
     {
-        // 1. Verify publication status from setting or root column
-        $isPublished = (bool) ($content->published ?? ($content->setting['published'] ?? false));
-        $statusIsPublished = ($content->setting['status'] ?? null) === 'published';
-
-        // 2. Resolve published_at timestamp from setting array or model property
-        $rawPublishedAt = $content->setting['published_at'] ?? $content->published_at;
-        $publishedAt = $rawPublishedAt ? Carbon::parse($rawPublishedAt) : null;
-
-        $isFuture = $publishedAt && $publishedAt->isFuture();
-
-        // 3. Abort if unpublished or scheduled for the future
-        if ((!$isPublished && !$statusIsPublished) || $isFuture) {
-            abort(404);
-        }
-
-        $relatedContents = Content::query()
-            ->where('id', '!=', $content->id)
+        $query = Content::with(['category', 'tags'])
             ->where(function ($q) {
-                $q->where('setting->published', true)
-                    ->orWhere('setting->published', 1)
-                    ->orWhere('setting->status', 'published')
-                    ->orWhere('published', true);
+                $q->where('setting->status', 'published')
+                    ->orWhereNull('setting->status');
             })
             ->where(function ($q) {
                 $q->whereNull('setting->published_at')
-                    ->orWhere('setting->published_at', '')
-                    ->orWhere('setting->published_at', '<=', now())
-                    ->orWhereNull('published_at')
-                    ->orWhere('published_at', '<=', now());
+                    ->orWhere('setting->published_at', '<=', now()->toDateTimeString());
             })
-            ->latest('created_at')
+            ->latest();
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('category')) {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('slug', $request->input('category'));
+            });
+        }
+
+        if ($request->filled('tag')) {
+            $query->whereHas('tags', function ($q) use ($request) {
+                $q->where('slug', $request->input('tag'));
+            });
+        }
+
+        return view('content.index', [
+            'contents'       => $query->paginate(9)->withQueryString(),
+            'categories'     => Category::where('is_active', true)->has('contents')->withCount('contents')->get(),
+            'tags'           => Tag::has('contents')->withCount('contents')->get(),
+            'activeCategory' => $request->input('category'),
+            'activeTag'      => $request->input('tag'),
+        ]);
+    }
+
+    /**
+     * Display a single content page / article.
+     */
+    public function show(Request $request, string $slug)
+    {
+        $content = Content::with(['category', 'tags'])
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        $settings = $content->setting ?? [];
+        $meta = $content->meta ?? [];
+
+        // 1. Guard against draft viewing by unauthenticated admin users
+        $isPublished = ($settings['status'] ?? 'published') === 'published';
+        $isScheduled = !empty($settings['published_at']) && $settings['published_at'] > now()->toDateTimeString();
+
+        if ((!$isPublished || $isScheduled) && !auth()->check()) {
+            abort(404);
+        }
+
+        // 2. Handle SEO 301/302 Redirections
+        if (!empty($meta['redirect_url'])) {
+            return redirect($meta['redirect_url'], (int) ($meta['redirect_code'] ?? 301));
+        }
+
+        // 3. Password Check ONLY when requires_auth is true
+        if (!empty($settings['requires_auth']) && !empty($settings['password_protection'])) {
+            $sessionKey = 'content_auth_' . $content->id;
+
+            if (!$request->session()->has($sessionKey)) {
+                if ($request->isMethod('post')) {
+                    if ($request->input('password') === $settings['password_protection']) {
+                        $request->session()->put($sessionKey, true);
+                        return redirect()->route('content.show', $content->slug);
+                    }
+
+                    return response()->view('content.password', [
+                        'content' => $content,
+                        'error'   => 'Incorrect password. Please try again.',
+                    ], 403);
+                }
+
+                return response()->view('content.password', ['content' => $content]);
+            }
+        }
+
+        // Related published items
+        $relatedContents = Content::with(['category', 'tags'])
+            ->where('id', '!=', $content->id)
+            ->where(function ($q) {
+                $q->where('setting->status', 'published')
+                    ->orWhereNull('setting->status');
+            })
+            ->when($content->category_id, fn ($q) => $q->where('category_id', $content->category_id))
+            ->latest()
             ->take(3)
             ->get();
 
         return view('content.show', [
-            'page' => $content,
+            'content'         => $content,
             'relatedContents' => $relatedContents,
         ]);
     }

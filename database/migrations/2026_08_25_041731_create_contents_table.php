@@ -19,12 +19,14 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug')->unique();
             $table->json('content')->nullable();
+            $table->foreignId('category_id')->nullable()->after('id')->constrained('categories')->nullOnDelete();
 
             // SEO & Metadata Optimizer Fields
             $table->json('seo')->nullable();
 
             // Flexibility
             $table->json('meta')->nullable();
+            $table->json('styles')->nullable();
             $table->json('setting')->nullable();
 
             // Ownership & Relations
@@ -34,6 +36,13 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes()->index(); // Sends items to a "Trash bin" instead of wiping the disk
         });
+
+        Schema::create('content_tag', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('content_id')->constrained('contents')->cascadeOnDelete();
+            $table->foreignId('tag_id')->constrained('tags')->cascadeOnDelete();
+            $table->timestamps();
+        });
     }
 
     /**
@@ -41,6 +50,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('content_tag');
         Schema::dropIfExists('contents');
     }
 };

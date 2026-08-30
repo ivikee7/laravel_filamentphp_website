@@ -1,27 +1,18 @@
-@props(['data'])
-
+@props(['data' => []])
 @php
+    $styleData = \App\Filament\Schemas\StyleHelper::compileStyles($data['styles'] ?? []);
     $level = $data['level'] ?? 'h2';
-    $alignment = $data['alignment'] ?? 'text-center';
-    $fontWeight = $data['font_weight'] ?? 'font-bold';
-    $marginTop = $data['margin_top'] ?? 'mt-0';
-    $marginBottom = $data['margin_bottom'] ?? 'mb-0';
-    $radius = $data['border_radius'] ?? 'rounded-none';
-    $shadow = $data['shadow'] ?? 'shadow-none';
-    $borderWidth = $data['border_width'] ?? 'border-0';
-    $hover = $data['hover_effect'] ?? 'hover:none';
-
-    $style = implode('; ', array_filter([
-        !empty($data['text_color']) ? 'color: ' . $data['text_color'] : null,
-        !empty($data['custom_font_size']) ? 'font-size: ' . $data['custom_font_size'] : null,
-        !empty($data['letter_spacing']) ? 'letter-spacing: ' . $data['letter_spacing'] : null,
-        !empty($data['border_color']) ? 'border-color: ' . $data['border_color'] : null,
-    ]));
+    $align = $data['alignment'] ?? 'text-left';
+    $weight = $data['font_weight'] ?? 'font-bold';
+    $text = $data['content'] ?? '';
 @endphp
 
-<{{ $level }}
-    class="{{ $alignment }} {{ $fontWeight }} {{ $marginTop }} {{ $marginBottom }} {{ $radius }} {{ $shadow }} {{ $borderWidth }} {{ $hover }} transition-all duration-300"
-style="{{ $style }}"
+<div
+    @if(!empty($styleData['id'])) id="{{ $styleData['id'] }}" @endif
+class="{{ $styleData['classes'] }}"
+    @if(!empty($styleData['inlineCss'])) style="{{ $styleData['inlineCss'] }}" @endif
 >
-{{ $data['content'] ?? '' }}
+    <{{ $level }} class="{{ $align }} {{ $weight }} tracking-tight text-slate-900 dark:text-white leading-tight">
+    {{ $text }}
 </{{ $level }}>
+</div>

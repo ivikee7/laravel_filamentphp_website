@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Category;
+use App\Models\Tag;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 #[Fillable([
-    'title', 'slug', 'content',
-    'seo', 'meta', 'setting',
+    'category_id', 'title', 'slug', 'content', 'styles', 'meta', 'setting',
     'created_by',
 ])]
 class Content extends Model
@@ -24,8 +26,8 @@ class Content extends Model
     {
         return [
             'content' => 'array',
-            'seo' => 'array',
-            'meta' => 'array',
+            'styles'  => 'array',
+            'meta'    => 'array',
             'setting' => 'array',
         ];
     }
@@ -33,12 +35,12 @@ class Content extends Model
     protected static function booted(): void
     {
         static::saving(function (Content $content) {
-            // Automatically record creator ID if available
+            // Automatically assign creator ID if available
             if (!$content->exists && Auth::check() && !$content->created_by) {
                 $content->created_by = Auth::id();
             }
 
-            // Check frontpage flag exclusively inside the 'setting' JSON array
+            // Exclusive frontpage assignment
             $setting = $content->setting ?? [];
             $isFrontpage = !empty($setting['is_frontpage']);
 
@@ -58,7 +60,7 @@ class Content extends Model
                     });
             }
 
-            // Slug Auto-generation
+            // Slug auto-generation & collision handling
             if (!$content->slug || $content->isDirty('title') || $content->isDirty('slug')) {
                 $sourceString = $content->slug ?: $content->title;
                 $slug = Str::slug($sourceString);
@@ -81,29 +83,28 @@ class Content extends Model
     }
 
     /**
-     * Fallback Magic Getter to safely read nested JSON fields (seo, setting, meta)
+     * Fallback magic getter to read nested setting/meta JSON keys
+     * without interrupting Eloquent attribute resolution or relations.
      */
     public function __get($key)
     {
-        // Safely retrieve from cast 'seo' array
-        $seo = $this->getAttribute('seo');
-        if (is_array($seo) && array_key_exists($key, $seo)) {
-            return $seo[$key];
+        $value = parent::__get($key);
+
+        if ($value !== null) {
+            return $value;
         }
 
-        // Safely retrieve from cast 'setting' array
         $setting = $this->getAttribute('setting');
         if (is_array($setting) && array_key_exists($key, $setting)) {
             return $setting[$key];
         }
 
-        // Safely retrieve from cast 'meta' array
         $meta = $this->getAttribute('meta');
         if (is_array($meta) && array_key_exists($key, $meta)) {
             return $meta[$key];
         }
 
-        return parent::__get($key);
+        return null;
     }
 
     public function getRouteKeyName(): string
@@ -111,9 +112,6 @@ class Content extends Model
         return 'slug';
     }
 
-    /**
-     * Scope query to only include frontpage content (targets setting JSON)
-     */
     public function scopeFrontpage(Builder $query): Builder
     {
         return $query->where(function ($q) {
@@ -125,5 +123,15 @@ class Content extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
     }
 }

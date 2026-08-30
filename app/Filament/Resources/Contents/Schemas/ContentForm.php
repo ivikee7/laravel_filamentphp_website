@@ -3,8 +3,12 @@
 namespace App\Filament\Resources\Contents\Schemas;
 
 use App\Filament\Schemas\PageBuilderSchema;
+use App\Filament\Forms\Components\SeoAnalyzer;
 use App\Filament\Schemas\PageSeoSchema;
 use App\Filament\Schemas\PageSettingsSchema;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
@@ -38,6 +42,36 @@ class ContentForm
                 ->unique(ignoreRecord: true)
                 ->maxLength(255),
 
+            Textarea::make('meta.description')
+                ->label('Page Description')
+                ->columnSpanFull()
+                ->live(onBlur: true)
+                ->maxLength(255),
+
+
+            Select::make('category_id')
+                ->label('Category')
+                ->relationship('category', 'name')
+                ->searchable()
+                ->preload()
+                ->preload()
+                ->createOptionForm([
+                    TextInput::make('name')->required(),
+                    TextInput::make('slug'),
+                    ColorPicker::make('color')->default('#2563eb'),
+                ]),
+
+            Select::make('tags')
+                ->label('Tags')
+                ->relationship('tags', 'name')
+                ->multiple()
+                ->searchable()
+                ->preload()
+                ->createOptionForm([
+                    TextInput::make('name')->required(),
+                    TextInput::make('slug'),
+                ]),
+
             Tabs::make('Content Management')
                 ->tabs([
                     Tab::make('Page Builder')
@@ -48,6 +82,12 @@ class ContentForm
 
                     Tab::make('SEO & Social')
                         ->icon('heroicon-o-globe-alt')
+                        ->badge(fn ($get): string => SeoAnalyzer::calculateSeoScore($get))
+                        ->badgeColor(fn ($get): string => match (true) {
+                            SeoAnalyzer::calculateSeoScore($get) >= 80 => 'success',
+                            SeoAnalyzer::calculateSeoScore($get) >= 50 => 'warning',
+                            default                                   => 'danger',
+                        })
                         ->schema([
                             PageSeoSchema::make(),
                         ]),

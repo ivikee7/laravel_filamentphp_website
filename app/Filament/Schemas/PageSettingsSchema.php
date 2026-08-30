@@ -2,6 +2,7 @@
 
 namespace App\Filament\Schemas;
 
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;

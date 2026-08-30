@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Menus\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -16,16 +18,10 @@ class MenusTable
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
-                TextColumn::make('url')
+                TextColumn::make('slug')
                     ->searchable(),
-                TextColumn::make('icon')
-                    ->searchable(),
-                TextColumn::make('parent_id')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('sort_order')
-                    ->numeric()
-                    ->sortable(),
+                IconColumn::make('is_active')
+                    ->boolean(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -39,6 +35,7 @@ class MenusTable
                 //
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

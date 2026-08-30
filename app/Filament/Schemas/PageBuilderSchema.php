@@ -27,7 +27,7 @@ class PageBuilderSchema
                         ->icon('heroicon-o-rectangle-group')
                         ->schema([
                             Tabs::make('Section Controls')
-                                ->tabs([
+                                ->schema([
                                     Tab::make('Rows & Columns Grid')
                                         ->icon('heroicon-o-view-columns')
                                         ->schema([
@@ -46,7 +46,7 @@ class PageBuilderSchema
                                                                 '2-1' => '2 Columns (67 / 33 Sidebar Right)',
                                                             ])
                                                             ->default('1')
-                                                            ->live(), // CRITICAL: Makes the UI dynamically resize the columns
+                                                            ->live(),
 
                                                         Select::make('gap')
                                                             ->label('Column Spacing Gap')
@@ -69,12 +69,11 @@ class PageBuilderSchema
                                                             ->default('items-start'),
                                                     ]),
 
-                                                    // DYNAMIC COLUMNS REPEATER
                                                     Repeater::make('columns')
                                                         ->label('Column Content Slots')
                                                         ->schema([
                                                             Tabs::make('Column Settings')
-                                                                ->tabs([
+                                                                ->schema([
                                                                     Tab::make('Column Elements')
                                                                         ->icon('heroicon-o-cube')
                                                                         ->schema([
@@ -82,8 +81,8 @@ class PageBuilderSchema
                                                                                 ->label('Elements in Column')
                                                                                 ->blockIcons()
                                                                                 ->collapsible()
-                                                                                ->blockPickerColumns(4)
-                                                                                ->blocks(BlockRegistry::getBlocks(depth: 0, maxDepth: 3)),
+                                                                                ->blockPickerColumns(3)
+                                                                                ->blocks(BlockRegistry::getLeafBlocks()),
                                                                         ]),
 
                                                                     Tab::make('Column Styles')
@@ -93,16 +92,13 @@ class PageBuilderSchema
                                                                         ]),
                                                                 ]),
                                                         ])
-                                                        // Dynamically sets the card width in Admin to match selection
                                                         ->grid(fn ($get) => match ($get('columns_layout')) {
                                                             '2', '1-2', '2-1' => 2,
                                                             '3'               => 3,
                                                             '4'               => 4,
                                                             default           => 1,
                                                         })
-                                                        ->collapsible()
-                                                        ->itemLabel(fn (array $state, $uuid): ?string => 'Column Slot')
-                                                        ->reorderableWithButtons(),
+                                                        ->collapsible(),
                                                 ])
                                                 ->collapsible(),
                                         ]),
@@ -115,7 +111,7 @@ class PageBuilderSchema
                                 ]),
                         ]),
                 ],
-                BlockRegistry::getBlocks(depth: 0, maxDepth: 3)
+                BlockRegistry::getBlocks(depth: 0, maxDepth: 1)
             ))
             ->columnSpanFull();
     }

@@ -3,106 +3,221 @@
     :field="$field"
 >
     <div
-        x-data="advancedSeoAnalyzer()"
+        x-data="highLevelSeoEngine()"
         x-init="initEngine()"
-        class="space-y-6 p-6 bg-slate-900 border border-slate-800 rounded-2xl text-slate-100 shadow-xl font-sans"
+        class="space-y-6 p-4 sm:p-6 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl text-gray-900 dark:text-gray-100 shadow-sm transition-colors duration-200 font-sans"
     >
-        {{-- High-Level Progress Dashboard --}}
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Overall SEO Score -->
-            <div class="p-4 bg-slate-800/60 rounded-xl border border-slate-700/60 flex items-center justify-between">
-                <div>
-                    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">SEO Optimization</span>
-                    <h4 class="text-2xl font-black mt-1" :class="seoScoreColorClass" x-text="seoScorePercent + '/100'">0/100</h4>
-                    <span class="text-xs font-medium text-slate-400" x-text="seoScoreRating">Evaluating...</span>
+        <!-- 1. Executive Performance KPI Dashboard -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+            <!-- SEO Score Card -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-700/60 flex items-center justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold block">SEO Score</span>
+                    <h4 class="text-2xl sm:text-3xl font-black mt-0.5 truncate" :class="seoScoreColorClass" x-text="seoScorePercent + '/100'">0/100</h4>
+                    <span class="text-[11px] font-semibold block truncate" :class="seoScoreColorClass" x-text="seoScoreRating">Evaluating...</span>
                 </div>
-                <div class="relative flex items-center justify-center">
+                <div class="relative shrink-0 w-12 h-12 flex items-center justify-center">
                     <svg class="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
-                        <path class="text-slate-700" stroke-width="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        <path :class="seoStrokeColorClass" stroke-dasharray="100, 100" :stroke-dashoffset="100 - seoScorePercent" stroke-width="3" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path class="text-gray-200 dark:text-gray-700" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path :class="seoStrokeColorClass" stroke-dasharray="100, 100" :stroke-dashoffset="100 - seoScorePercent" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     </svg>
                 </div>
             </div>
 
-            <!-- Readability Score -->
-            <div class="p-4 bg-slate-800/60 rounded-xl border border-slate-700/60 flex items-center justify-between">
-                <div>
-                    <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Readability Index</span>
-                    <h4 class="text-2xl font-black mt-1" :class="readabilityColorClass" x-text="fleschScore + '/100'">0/100</h4>
-                    <span class="text-xs font-medium text-slate-400" x-text="readabilityRating">Evaluating...</span>
+            <!-- Readability Card -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-700/60 flex items-center justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold block">Readability</span>
+                    <h4 class="text-2xl sm:text-3xl font-black mt-0.5 truncate" :class="readabilityColorClass" x-text="fleschScore + '/100'">0/100</h4>
+                    <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 block truncate" x-text="readabilityRating">Evaluating...</span>
                 </div>
-                <div class="w-4 h-4 rounded-full" :class="readabilityBadge"></div>
+                <div class="w-3.5 h-3.5 rounded-full shrink-0" :class="readabilityBadge"></div>
             </div>
 
-            <!-- Content Stats -->
-            <div class="p-4 bg-slate-800/60 rounded-xl border border-slate-700/60 flex flex-col justify-center">
-                <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Page Metrics</span>
-                <div class="flex items-center gap-4 mt-2">
-                    <div>
-                        <span class="text-lg font-bold text-white" x-text="metrics.words">0</span>
-                        <p class="text-[11px] text-slate-400">Words</p>
+            <!-- Focus Keyword Card -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-700/60 flex flex-col justify-between gap-2">
+                <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">Focus Keyword</span>
+                <div class="min-w-0">
+                    <p class="text-sm font-extrabold text-blue-600 dark:text-blue-400 truncate" x-text="focusKeyword ? '&ldquo;' + focusKeyword + '&rdquo;' : 'None Defined'"></p>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5" x-text="keywordDensity + '% density (' + keywordMatches + 'x)'"></p>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                    <div class="h-full transition-all duration-500" :class="keywordDensityColor" :style="'width: ' + Math.min(100, keywordDensity * 35) + '%'"></div>
+                </div>
+            </div>
+
+            <!-- Page Content Card -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-700/60 flex flex-col justify-between gap-2">
+                <span class="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold">Page Content</span>
+                <div class="grid grid-cols-3 gap-2 text-center mt-1">
+                    <div class="min-w-0">
+                        <span class="text-base sm:text-lg font-black text-gray-900 dark:text-white block truncate" x-text="metrics.words">0</span>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-semibold">Words</p>
                     </div>
-                    <div class="h-6 w-px bg-slate-700"></div>
-                    <div>
-                        <span class="text-lg font-bold text-white" x-text="metrics.readingTime + 'm'">0m</span>
-                        <p class="text-[11px] text-slate-400">Reading Time</p>
+                    <div class="min-w-0 border-x border-gray-200 dark:border-gray-700/80 px-1">
+                        <span class="text-base sm:text-lg font-black text-gray-900 dark:text-white block truncate" x-text="metrics.headings">0</span>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-semibold">Headings</p>
                     </div>
-                    <div class="h-6 w-px bg-slate-700"></div>
-                    <div>
-                        <span class="text-lg font-bold text-white" x-text="metrics.headings">0</span>
-                        <p class="text-[11px] text-slate-400">Headings</p>
+                    <div class="min-w-0">
+                        <span class="text-base sm:text-lg font-black text-gray-900 dark:text-white block truncate" x-text="metrics.readingTime + 'm'">0m</span>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-semibold">Read Time</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- Google SERP Live Search Engine Preview --}}
-        <div class="p-4 bg-slate-800/40 rounded-xl border border-slate-700/50 space-y-2">
-            <div class="flex items-center justify-between">
-                <h5 class="text-xs uppercase font-bold tracking-wider text-slate-400 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
-                    Google SERP Preview (Desktop)
-                </h5>
-                <span class="text-[11px] text-slate-500 font-mono" x-text="previewUrl"></span>
-            </div>
-            <div class="p-4 bg-[#202124] rounded-lg border border-slate-700/80 font-sans">
-                <div class="text-xs text-[#bdc1c6] truncate flex items-center gap-1.5">
-                    <span class="w-4 h-4 rounded-full bg-slate-700 flex items-center justify-center text-[9px] text-slate-300">G</span>
-                    <span class="truncate" x-text="previewDomain + ' › ' + (slug || 'your-page-slug')"></span>
+        <!-- 2. Snippet Preview Simulation -->
+        <div x-data="{ previewTab: 'google' }" class="p-4 sm:p-5 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-gray-200 dark:border-gray-800 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-gray-200 dark:border-gray-800 pb-3">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs uppercase font-extrabold tracking-wider text-gray-700 dark:text-gray-300">Snippet Preview</span>
+                    <span class="text-[11px] font-mono text-gray-500 truncate max-w-xs" x-text="getFullLiveUrl()"></span>
+
+                    <!-- Visit Live Page Icon Button -->
+                    <template x-if="slug">
+                        <a
+                            :href="getFullLiveUrl()"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 px-2.5 py-0.5 rounded-md transition-all hover:shadow-xs group"
+                            title="Visit Web Page in New Tab"
+                        >
+                            <span>Visit Page</span>
+                            <svg class="w-3.5 h-3.5 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                        </a>
+                    </template>
                 </div>
-                <h3 class="text-lg text-[#8ab4f8] font-medium leading-snug cursor-pointer hover:underline truncate mt-1" x-text="previewTitle"></h3>
-                <p class="text-xs text-[#bdc1c6] mt-1 line-clamp-2 leading-relaxed" x-text="previewDescription"></p>
+                <div class="flex gap-1 p-1 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-xs">
+                    <button type="button" @click="previewTab = 'google'" class="px-2.5 py-1 rounded font-semibold transition-all cursor-pointer" :class="previewTab === 'google' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'">Google</button>
+                    <button type="button" @click="previewTab = 'social'" class="px-2.5 py-1 rounded font-semibold transition-all cursor-pointer" :class="previewTab === 'social' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'">Social</button>
+                    <button type="button" @click="previewTab = 'twitter'" class="px-2.5 py-1 rounded font-semibold transition-all cursor-pointer" :class="previewTab === 'twitter' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'">Twitter</button>
+                </div>
+            </div>
+
+            <!-- Google View -->
+            <div x-show="previewTab === 'google'" class="p-4 bg-white dark:bg-[#202124] rounded-lg border border-gray-200 dark:border-gray-700/80 font-sans max-w-2xl shadow-xs">
+                <div class="text-xs text-gray-600 dark:text-[#bdc1c6] truncate flex items-center justify-between gap-1.5">
+                    <div class="flex items-center gap-1.5 truncate">
+                        <span class="w-4 h-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-[9px] text-gray-700 dark:text-gray-300 font-bold shrink-0">G</span>
+                        <span class="truncate" x-text="previewDomain + ' › ' + (slug || 'your-slug')"></span>
+                    </div>
+
+                    <!-- Direct Icon Link -->
+                    <template x-if="slug">
+                        <a
+                            :href="getFullLiveUrl()"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-0.5 rounded shrink-0"
+                            title="Open in new tab"
+                        >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                        </a>
+                    </template>
+                </div>
+
+                <h3 class="text-base sm:text-lg font-medium leading-snug truncate mt-1">
+                    <a
+                        :href="slug ? getFullLiveUrl() : '#'"
+                        :target="slug ? '_blank' : '_self'"
+                        class="text-blue-700 dark:text-[#8ab4f8] hover:underline"
+                        x-text="previewTitle"
+                    ></a>
+                </h3>
+                <p class="text-xs text-gray-600 dark:text-[#bdc1c6] mt-1 line-clamp-2 leading-relaxed" x-text="previewDescription"></p>
+            </div>
+
+            <!-- OpenGraph / Social Preview -->
+            <div x-show="previewTab === 'social'" x-cloak class="border border-gray-200 dark:border-gray-700/60 rounded-xl overflow-hidden max-w-md bg-white dark:bg-gray-950 shadow-xs">
+                <div class="h-44 bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden relative">
+                    <template x-if="ogImage">
+                        <img :src="ogImage" x-on:error="ogImage = ''" alt="OG Preview" class="w-full h-full object-cover">
+                    </template>
+                    <template x-if="!ogImage">
+                        <div class="text-center p-4">
+                            <svg class="w-8 h-8 mx-auto text-gray-400 dark:text-gray-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">No Social Image Set (1200×630)</span>
+                        </div>
+                    </template>
+                </div>
+                <div class="p-3 bg-gray-50 dark:bg-[#242526] border-t border-gray-200 dark:border-gray-800">
+                    <span class="text-[10px] uppercase text-gray-500 dark:text-gray-400 tracking-wider block" x-text="previewDomain"></span>
+                    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate mt-0.5" x-text="ogTitle || previewTitle"></h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5" x-text="ogDesc || previewDescription"></p>
+                </div>
+            </div>
+
+            <!-- Twitter Card Preview -->
+            <div x-show="previewTab === 'twitter'" x-cloak class="border border-gray-200 dark:border-gray-700/60 rounded-2xl overflow-hidden max-w-md bg-white dark:bg-black shadow-xs">
+                <div class="h-44 bg-gray-100 dark:bg-gray-900 flex items-center justify-center overflow-hidden relative">
+                    <template x-if="ogImage">
+                        <img :src="ogImage" x-on:error="ogImage = ''" alt="Twitter Preview" class="w-full h-full object-cover">
+                    </template>
+                    <template x-if="!ogImage">
+                        <div class="text-center p-4">
+                            <svg class="w-8 h-8 mx-auto text-gray-400 dark:text-gray-600 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">Large Twitter Banner</span>
+                        </div>
+                    </template>
+                </div>
+                <div class="p-3 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-900">
+                    <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 truncate" x-text="ogTitle || previewTitle"></h4>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5" x-text="ogDesc || previewDescription"></p>
+                </div>
             </div>
         </div>
 
-        {{-- Tabbed Live Audit Categories --}}
-        <div class="space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                <h5 class="text-sm font-bold text-slate-200">Comprehensive SEO & Readability Audits</h5>
-                <div class="flex gap-2 text-xs font-semibold">
-                    <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400" x-text="auditStats.passed + ' Passed'"></span>
-                    <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-400" x-text="auditStats.warnings + ' Warnings'"></span>
-                    <span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400" x-text="auditStats.failed + ' Errors'"></span>
+        <!-- 3. Audit Checks Matrix -->
+        <div x-data="{ activeFilter: 'all' }" class="space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-800 pb-3">
+                <div class="flex flex-wrap gap-1.5 text-xs font-semibold">
+                    <button type="button" @click="activeFilter = 'all'" class="px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer" :class="activeFilter === 'all' ? 'bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'">All</button>
+                    <button type="button" @click="activeFilter = 'onpage'" class="px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer" :class="activeFilter === 'onpage' ? 'bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'">On-Page</button>
+                    <button type="button" @click="activeFilter = 'content'" class="px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer" :class="activeFilter === 'content' ? 'bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'">Content</button>
+                    <button type="button" @click="activeFilter = 'technical'" class="px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer" :class="activeFilter === 'technical' ? 'bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'">Technical</button>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs font-bold">
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20" x-text="auditStats.passed + ' Passed'"></span>
+                    <span class="px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20" x-text="auditStats.warnings + ' Warnings'"></span>
+                    <span class="px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20" x-text="auditStats.failed + ' Errors'"></span>
                 </div>
             </div>
 
+            <!-- Audits Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <template x-for="audit in allAudits" :key="audit.id">
-                    <div class="p-3.5 rounded-xl border flex items-start gap-3 transition-colors"
-                         :class="{
-                            'bg-emerald-950/20 border-emerald-800/40': audit.status === 'good',
-                            'bg-amber-950/20 border-amber-800/40': audit.status === 'warning',
-                            'bg-rose-950/20 border-rose-800/40': audit.status === 'error'
-                         }">
-                        <span class="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0"
-                              :class="{
-                                'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]': audit.status === 'good',
-                                'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]': audit.status === 'warning',
-                                'bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.6)]': audit.status === 'error'
-                              }"></span>
+                <template x-for="audit in filteredAudits(activeFilter)" :key="audit.id">
+                    <div
+                        class="p-3.5 rounded-xl border flex items-start gap-3 transition-colors"
+                        :class="{
+                            'bg-emerald-50/50 dark:bg-emerald-950/15 border-emerald-200 dark:border-emerald-800/40': audit.status === 'good',
+                            'bg-amber-50/50 dark:bg-amber-950/15 border-amber-200 dark:border-amber-800/40': audit.status === 'warning',
+                            'bg-rose-50/50 dark:bg-rose-950/15 border-rose-200 dark:border-rose-800/40': audit.status === 'error'
+                        }"
+                    >
+                        <span
+                            class="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0"
+                            :class="{
+                                'bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]': audit.status === 'good',
+                                'bg-amber-500 dark:bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]': audit.status === 'warning',
+                                'bg-rose-500 dark:bg-rose-400 shadow-[0_0_6px_rgba(251,113,133,0.8)]': audit.status === 'error'
+                            }"
+                        ></span>
                         <div class="flex-1 min-w-0">
-                            <p class="text-xs font-bold text-slate-200" x-text="audit.title"></p>
-                            <p class="text-[11px] text-slate-400 mt-0.5 leading-relaxed" x-text="audit.message"></p>
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="text-xs font-bold text-gray-900 dark:text-gray-100" x-text="audit.title"></p>
+                                <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400" x-text="audit.category"></span>
+                            </div>
+                            <p class="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5 leading-relaxed" x-text="audit.message"></p>
                         </div>
                     </div>
                 </template>
@@ -111,74 +226,102 @@
     </div>
 
     <script>
-        function advancedSeoAnalyzer() {
+        function highLevelSeoEngine() {
             return {
+                urlTemplate: @js($field->getLiveUrlTemplate()),
+                serverState: @js($field->getEvaluationPayload()),
+
                 seoScorePercent: 0,
-                seoScoreRating: 'Calculating...',
-                seoScoreColorClass: 'text-amber-400',
-                seoStrokeColorClass: 'text-amber-400',
+                seoScoreRating: 'Evaluating...',
+                seoScoreColorClass: 'text-amber-500',
+                seoStrokeColorClass: 'text-amber-500',
 
                 fleschScore: 0,
                 readabilityRating: 'Calculating...',
                 readabilityBadge: 'bg-amber-500',
-                readabilityColorClass: 'text-amber-400',
+                readabilityColorClass: 'text-amber-500',
+
+                focusKeyword: '',
+                keywordDensity: 0,
+                keywordMatches: 0,
+                keywordDensityColor: 'bg-amber-500',
 
                 previewTitle: '',
                 previewDescription: '',
                 previewDomain: window.location.hostname || 'example.com',
                 previewUrl: window.location.origin,
                 slug: '',
+                ogTitle: '',
+                ogDesc: '',
+                ogImage: '',
 
-                metrics: {
-                    words: 0,
-                    readingTime: 0,
-                    headings: 0,
-                    images: 0,
-                    imagesWithoutAlt: 0,
-                    linksInternal: 0,
-                    linksExternal: 0
-                },
-
+                metrics: { words: 0, readingTime: 0, headings: 0 },
                 auditStats: { passed: 0, warnings: 0, failed: 0 },
                 allAudits: [],
 
                 initEngine() {
-                    this.$watch('$wire.data', () => this.runEngine(), { deep: true });
-                    this.runEngine();
+                    // 1. Immediately hydrate from exact backend PHP computation
+                    if (this.serverState && Object.keys(this.serverState).length > 0) {
+                        this.applyState(this.serverState);
+                    }
+
+                    // 2. Listen to live form updates only when editing
+                    if (this.$wire && this.$wire.data && Object.keys(this.$wire.data).length > 0) {
+                        this.$watch('$wire.data', () => this.runEngine(), { deep: true });
+                        this.runEngine();
+                    }
                 },
 
-                // Traverse JSON content blocks and collect raw HTML / text
-                extractContentPayload(node, accumulator = { html: '', text: '' }) {
-                    if (!node) return accumulator;
+                applyState(state) {
+                    this.seoScorePercent = state.score || 0;
+                    this.seoScoreRating = state.scoreRating || 'Evaluating...';
+                    this.seoScoreColorClass = state.scoreColor || 'text-amber-500';
+                    this.seoStrokeColorClass = state.strokeColor || 'text-amber-500';
 
-                    if (typeof node === 'string') {
-                        accumulator.html += ' ' + node;
-                        accumulator.text += ' ' + node.replace(/<[^>]*>?/gm, ' ');
-                        return accumulator;
-                    }
-                    if (Array.isArray(node)) {
-                        node.forEach(item => this.extractContentPayload(item, accumulator));
-                        return accumulator;
-                    }
-                    if (typeof node === 'object') {
-                        Object.entries(node).forEach(([key, val]) => {
-                            if (!['type', 'icon', 'layout', 'style', 'id'].includes(key)) {
-                                this.extractContentPayload(val, accumulator);
-                            }
-                        });
-                    }
-                    return accumulator;
+                    this.fleschScore = state.fleschScore || 0;
+                    this.readabilityRating = state.readabilityRating || 'Calculating...';
+                    this.readabilityBadge = state.readabilityBadge || 'bg-amber-500';
+                    this.readabilityColorClass = state.readabilityColor || 'text-amber-500';
+
+                    this.focusKeyword = state.focusKeyword || '';
+                    this.keywordDensity = state.keywordDensity || 0;
+                    this.keywordMatches = state.keywordMatches || 0;
+                    this.keywordDensityColor = state.keywordDensityColor || 'bg-amber-500';
+
+                    this.previewTitle = state.title || 'Set an SEO Meta Title...';
+                    this.previewDescription = state.description || 'Add a concise meta description...';
+                    this.slug = state.slug || '';
+                    this.ogTitle = state.ogTitle || this.previewTitle;
+                    this.ogDesc = state.ogDesc || this.previewDescription;
+                    this.ogImage = state.ogImage || '';
+
+                    this.metrics.words = state.words || 0;
+                    this.metrics.headings = state.headings || 0;
+                    this.metrics.readingTime = state.readingTime || 0;
+
+                    this.allAudits = state.audits || [];
+                    this.auditStats = state.stats || { passed: 0, warnings: 0, failed: 0 };
                 },
 
-                // Improved Flesch Reading Ease algorithm
+                getFullLiveUrl() {
+                    const cleanSlug = (this.slug || '').trim();
+                    if (!cleanSlug) {
+                        return this.urlTemplate.replace('/__SLUG__', '').replace('__SLUG__', '');
+                    }
+                    return this.urlTemplate.replace('__SLUG__', cleanSlug);
+                },
+
+                filteredAudits(category) {
+                    if (category === 'all') return this.allAudits;
+                    return this.allAudits.filter(a => a.category === category);
+                },
+
                 calculateFlesch(text) {
                     const cleanText = text.replace(/[^a-zA-Z0-9.\s!?]/g, ' ').replace(/\s+/g, ' ').trim();
-                    if (!cleanText) return 0;
-
-                    const words = cleanText.split(/\s+/).filter(w => w.length > 0);
+                    if (!cleanText) return 60;
+                    const words = cleanText.split(/\s+/).filter(Boolean);
                     const sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 0);
-
-                    if (words.length < 5 || sentences.length === 0) return 60; // Neutral default for short text
+                    if (words.length < 5 || sentences.length === 0) return 60;
 
                     let syllables = 0;
                     words.forEach(word => {
@@ -192,219 +335,226 @@
                 },
 
                 runEngine() {
-                    const data = this.$wire.data || {};
+                    const wireData = this.$wire?.data;
+                    const wireRecord = this.$wire?.record;
+                    const fallback = this.initialRecord || {};
 
-                    // 1. Omnichannel field resolution (works at root or inside 'seo' / 'setting' blocks)
-                    const seoBlock = data.seo || {};
-                    const settingBlock = data.setting || {};
+                    const data = (wireData && Object.keys(wireData).length > 0)
+                        ? wireData
+                        : ((wireRecord && Object.keys(wireRecord).length > 0) ? wireRecord : fallback);
 
-                    const rawKeywords = seoBlock.seo_keywords || data.seo_keywords || [];
-                    const focusKeyword = (Array.isArray(rawKeywords) ? (rawKeywords[0] || '') : String(rawKeywords).split(',')[0] || '').trim();
+                    const metaBlock = data.meta || fallback.meta || {};
+                    const settingBlock = data.setting || fallback.setting || {};
 
-                    const title = seoBlock.seo_title || data.seo_title || data.title || '';
-                    const metaDesc = seoBlock.seo_description || data.seo_description || '';
-                    this.slug = data.slug || settingBlock.slug || '';
+                    const rawKeywords = metaBlock.seo_keywords || data.seo_keywords || fallback.seo_keywords || [];
+                    this.focusKeyword = (Array.isArray(rawKeywords) ? (rawKeywords[0] || '') : String(rawKeywords).split(',')[0] || '').trim();
 
-                    // 2. Extract DOM & Content
-                    const contentPayload = this.extractContentPayload(data.content || data.blocks || data.builder || []);
-                    const rawHtml = contentPayload.html;
-                    const cleanText = contentPayload.text.replace(/\s+/g, ' ').trim();
+                    const title = (metaBlock.seo_title || data.seo_title || data.title || fallback.title || '').trim();
+                    const metaDesc = (metaBlock.seo_description || data.seo_description || data.description || fallback.description || '').trim();
+                    this.slug = (data.slug || settingBlock.slug || fallback.slug || '').trim();
+
+                    this.ogTitle = metaBlock.og_title || title;
+                    this.ogDesc = metaBlock.og_description || metaDesc;
+
+                    // 1. Target ONLY the primary body content
+                    let primaryContent = data.content ?? data.blocks ?? data.builder ?? data.body ?? fallback.content ?? fallback.blocks ?? fallback.body ?? '';
+
+                    let extractedRaw = '';
+                    let extractedText = '';
+                    let headingsCount = 0;
+
+                    const extract = (node) => {
+                        if (!node) return;
+                        if (typeof node === 'string') {
+                            const trimmed = node.trim();
+                            if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+                                try {
+                                    extract(JSON.parse(trimmed));
+                                    return;
+                                } catch (e) {}
+                            }
+                            extractedRaw += '\n' + node;
+                            let formatted = node.replace(/<[^>]+>/g, ' ');
+                            let clean = formatted.replace(/[#*_~`>\[\]]/g, ' ');
+                            extractedText += ' ' + clean;
+                            return;
+                        }
+                        if (Array.isArray(node)) {
+                            node.forEach(item => extract(item));
+                            return;
+                        }
+                        if (typeof node === 'object') {
+                            if (node.type && ['heading', 'header', 'subheading'].includes(String(node.type).toLowerCase())) {
+                                headingsCount++;
+                            }
+                            Object.entries(node).forEach(([key, val]) => {
+                                if (['heading', 'header', 'title', 'subheading', 'headline'].includes(String(key).toLowerCase())) {
+                                    headingsCount++;
+                                }
+                                // Ignore non-content structural/meta keys
+                                if (!['type', 'icon', 'layout', 'style', 'styles', 'id', 'meta', 'seo_title', 'seo_description', 'seo_keywords', 'og_title', 'og_description', 'og_image', 'setting'].includes(key)) {
+                                    extract(val);
+                                }
+                            });
+                        }
+                    };
+
+                    extract(primaryContent);
+
+                    const htmlHeadings = (extractedRaw.match(/<h[1-6][^>]*>/gi) || []).length;
+                    headingsCount += htmlHeadings;
+                    const mdHeadings = (extractedRaw.match(/^\s*#{1,6}\s+.+/gm) || []).length;
+                    headingsCount += mdHeadings;
+
+                    const cleanText = extractedText.replace(/\s+/g, ' ').trim();
                     const words = cleanText.split(/\s+/).filter(Boolean);
                     const totalWords = words.length;
 
-                    // 3. Populate Live SERP
-                    this.previewTitle = title || 'Please set a Page Title...';
-                    this.previewDescription = metaDesc || 'Please provide a meta description to preview how your snippet appears in search engine results.';
+                    // 2. Resolve Social Image
+                    let rawImg = metaBlock.og_image || data.og_image || data.image || fallback.image || null;
+                    if (typeof rawImg === 'object' && rawImg !== null) {
+                        rawImg = Array.isArray(rawImg) ? rawImg[0] : Object.values(rawImg)[0];
+                    }
 
-                    // 4. Calculate Structural Metrics
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = rawHtml;
+                    this.ogImage = (typeof rawImg === 'string' && rawImg.trim().length > 0)
+                        ? (rawImg.startsWith('http') || rawImg.startsWith('data:') ? rawImg : '/storage/' + rawImg.replace(/^\/+/, ''))
+                        : '';
 
-                    const headings = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
-                    const images = tempDiv.querySelectorAll('img');
-                    let imagesWithoutAlt = 0;
-                    images.forEach(img => { if (!img.getAttribute('alt')) imagesWithoutAlt++; });
-
-                    const links = tempDiv.querySelectorAll('a');
-                    let internalLinks = 0;
-                    let externalLinks = 0;
-                    links.forEach(link => {
-                        const href = link.getAttribute('href') || '';
-                        if (href.startsWith('http') && !href.includes(this.previewDomain)) {
-                            externalLinks++;
-                        } else if (href.length > 0 && !href.startsWith('#')) {
-                            internalLinks++;
-                        }
-                    });
+                    this.previewTitle = title || 'Set an SEO Meta Title...';
+                    this.previewDescription = metaDesc || 'Add a concise meta description to preview how your page appears in search results.';
 
                     this.metrics.words = totalWords;
                     this.metrics.readingTime = Math.max(1, Math.ceil(totalWords / 200));
-                    this.metrics.headings = headings.length;
-                    this.metrics.images = images.length;
-                    this.metrics.imagesWithoutAlt = imagesWithoutAlt;
-                    this.metrics.linksInternal = internalLinks;
-                    this.metrics.linksExternal = externalLinks;
+                    this.metrics.headings = headingsCount;
 
-                    // 5. Readability Analysis
+                    // 3. Keyword Density
+                    if (this.focusKeyword && totalWords > 0) {
+                        const escapedKw = this.focusKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const matches = (cleanText.toLowerCase().match(new RegExp(escapedKw.toLowerCase(), 'g')) || []).length;
+                        this.keywordMatches = matches;
+                        this.keywordDensity = parseFloat(((matches / totalWords) * 100).toFixed(1));
+
+                        this.keywordDensityColor = (this.keywordDensity >= 0.8 && this.keywordDensity <= 2.5)
+                            ? 'bg-emerald-500'
+                            : (this.keywordDensity > 2.5 ? 'bg-rose-500' : 'bg-amber-500');
+                    } else {
+                        this.keywordMatches = 0;
+                        this.keywordDensity = 0;
+                        this.keywordDensityColor = 'bg-gray-300 dark:bg-gray-700';
+                    }
+
+                    // 4. Readability Score
                     this.fleschScore = this.calculateFlesch(cleanText);
                     if (this.fleschScore >= 60) {
-                        this.readabilityRating = 'Easy to read (Good)';
-                        this.readabilityBadge = 'bg-emerald-500 shadow-[0_0_8px_rgba(52,211,153,0.6)]';
-                        this.readabilityColorClass = 'text-emerald-400';
+                        this.readabilityRating = 'Easy to Read';
+                        this.readabilityBadge = 'bg-emerald-500';
+                        this.readabilityColorClass = 'text-emerald-600 dark:text-emerald-400';
                     } else if (this.fleschScore >= 40) {
-                        this.readabilityRating = 'Moderate reading level';
-                        this.readabilityBadge = 'bg-amber-500 shadow-[0_0_8px_rgba(251,191,36,0.6)]';
-                        this.readabilityColorClass = 'text-amber-400';
+                        this.readabilityRating = 'Moderate Level';
+                        this.readabilityBadge = 'bg-amber-500';
+                        this.readabilityColorClass = 'text-amber-600 dark:text-amber-400';
                     } else {
-                        this.readabilityRating = 'Complex phrasing (Hard)';
-                        this.readabilityBadge = 'bg-rose-500 shadow-[0_0_8px_rgba(251,113,133,0.6)]';
-                        this.readabilityColorClass = 'text-rose-400';
+                        this.readabilityRating = 'Hard to Read';
+                        this.readabilityBadge = 'bg-rose-500';
+                        this.readabilityColorClass = 'text-rose-600 dark:text-rose-400';
                     }
 
-                    // 6. Comprehensive 12-Point Live Audits
+                    // 5. Audit Engine Evaluation
                     let audits = [];
                     let scorePoints = 0;
-                    const maxPoints = 100;
 
-                    // Audit 1: Focus Keyword Defined
-                    if (focusKeyword) {
-                        audits.push({ id: 1, status: 'good', title: `Focus Keyword: "${focusKeyword}"`, message: 'Primary target keyword is set.' });
+                    if (this.focusKeyword) {
+                        audits.push({ id: 1, category: 'onpage', status: 'good', title: 'Focus Keyword Defined', message: `Primary keyword set to "${this.focusKeyword}".` });
                         scorePoints += 10;
-                    } else {
-                        audits.push({ id: 1, status: 'error', title: 'Missing Focus Keyword', message: 'Add a target keyword to unlock keyword density and placement audits.' });
-                    }
 
-                    // Audit 2: Keyword in Meta Title
-                    if (focusKeyword) {
-                        const kwLower = focusKeyword.toLowerCase();
-                        const titleLower = title.toLowerCase();
-                        if (titleLower.includes(kwLower)) {
-                            if (titleLower.startsWith(kwLower)) {
-                                audits.push({ id: 2, status: 'good', title: 'Keyword at Start of Title', message: 'Target keyword appears at the beginning of the title.' });
+                        if (title) {
+                            if (title.toLowerCase().startsWith(this.focusKeyword.toLowerCase())) {
+                                audits.push({ id: 2, category: 'onpage', status: 'good', title: 'Keyword at Start of Title', message: 'Target keyword is placed at the beginning of the title.' });
+                                scorePoints += 15;
+                            } else if (title.toLowerCase().includes(this.focusKeyword.toLowerCase())) {
+                                audits.push({ id: 2, category: 'onpage', status: 'good', title: 'Keyword in Title', message: 'Target keyword is present in the meta title.' });
                                 scorePoints += 10;
                             } else {
-                                audits.push({ id: 2, status: 'good', title: 'Keyword in Title', message: 'Target keyword is present in the meta title.' });
-                                scorePoints += 8;
+                                audits.push({ id: 2, category: 'onpage', status: 'error', title: 'Keyword Missing from Title', message: 'Include your target keyword in the SEO Title.' });
                             }
-                        } else {
-                            audits.push({ id: 2, status: 'error', title: 'Keyword Missing from Title', message: 'Include your focus keyword inside the meta title.' });
                         }
+
+                        if (metaDesc && metaDesc.toLowerCase().includes(this.focusKeyword.toLowerCase())) {
+                            audits.push({ id: 3, category: 'onpage', status: 'good', title: 'Keyword in Meta Description', message: 'Focus keyword appears in the snippet description.' });
+                            scorePoints += 10;
+                        } else {
+                            audits.push({ id: 3, category: 'onpage', status: 'warning', title: 'Keyword Missing from Description', message: 'Include your focus keyword inside the meta description.' });
+                        }
+
+                        const cleanSlugKw = this.focusKeyword.toLowerCase().replace(/\s+/g, '-');
+                        if (this.slug && this.slug.toLowerCase().includes(cleanSlugKw)) {
+                            audits.push({ id: 4, category: 'onpage', status: 'good', title: 'Keyword in URL Slug', message: 'Target keyword is present in the page URL.' });
+                            scorePoints += 10;
+                        } else {
+                            audits.push({ id: 4, category: 'onpage', status: 'warning', title: 'Keyword Missing from URL', message: 'Include your keyword in the page URL slug.' });
+                        }
+
+                        const introWords = words.slice(0, 100).join(' ').toLowerCase();
+                        if (introWords.includes(this.focusKeyword.toLowerCase())) {
+                            audits.push({ id: 5, category: 'content', status: 'good', title: 'Keyword in Introduction', message: 'Keyword appears in the opening paragraph.' });
+                            scorePoints += 10;
+                        } else {
+                            audits.push({ id: 5, category: 'content', status: 'warning', title: 'Keyword Missing from Intro', message: 'Place your keyword in the first paragraph.' });
+                        }
+                    } else {
+                        audits.push({ id: 1, category: 'onpage', status: 'error', title: 'Missing Focus Keyword', message: 'Set a focus keyword to evaluate search optimization.' });
                     }
 
-                    // Audit 3: Title Length Optimization
                     const titleLen = title.length;
                     if (titleLen >= 40 && titleLen <= 60) {
-                        audits.push({ id: 3, status: 'good', title: 'Optimal Title Length', message: `Title is ${titleLen} chars (Ideal: 40-60 chars).` });
+                        audits.push({ id: 6, category: 'onpage', status: 'good', title: 'Optimal Title Length', message: `Title is ${titleLen} characters (Ideal: 40-60).` });
                         scorePoints += 10;
-                    } else if (titleLen > 60) {
-                        audits.push({ id: 3, status: 'warning', title: 'Title is Too Long', message: `Title is ${titleLen} chars. It may be truncated in Google search results.` });
-                        scorePoints += 4;
+                    } else if (titleLen > 0) {
+                        audits.push({ id: 6, category: 'onpage', status: 'warning', title: 'Title Length Suboptimal', message: `Title is ${titleLen} characters. Aim for 40-60 characters.` });
+                        scorePoints += 5;
                     } else {
-                        audits.push({ id: 3, status: 'error', title: 'Title is Too Short', message: `Title is ${titleLen} chars. Aim for 40-60 characters for maximum CTR.` });
+                        audits.push({ id: 6, category: 'onpage', status: 'error', title: 'Missing Title', message: 'Add an SEO Title.' });
                     }
 
-                    // Audit 4: Meta Description Length
                     const descLen = metaDesc.length;
                     if (descLen >= 120 && descLen <= 160) {
-                        audits.push({ id: 4, status: 'good', title: 'Optimal Meta Description', message: `Description is ${descLen} chars (Ideal: 120-160 chars).` });
+                        audits.push({ id: 7, category: 'onpage', status: 'good', title: 'Optimal Description', message: `Description is ${descLen} characters (Ideal: 120-160).` });
                         scorePoints += 10;
-                    } else if (descLen > 160) {
-                        audits.push({ id: 4, status: 'warning', title: 'Meta Description Too Long', message: `Description is ${descLen} chars. Google will truncate snippets over 160 chars.` });
-                        scorePoints += 4;
                     } else if (descLen > 0) {
-                        audits.push({ id: 4, status: 'warning', title: 'Meta Description Too Short', message: `Description is ${descLen} chars. Add more context (target 120-160).` });
-                        scorePoints += 3;
-                    } else {
-                        audits.push({ id: 4, status: 'error', title: 'Missing Meta Description', message: 'Write a compelling meta description to improve organic click-through rates.' });
-                    }
-
-                    // Audit 5: Keyword in Meta Description
-                    if (focusKeyword && metaDesc) {
-                        if (metaDesc.toLowerCase().includes(focusKeyword.toLowerCase())) {
-                            audits.push({ id: 5, status: 'good', title: 'Keyword in Meta Description', message: 'Focus keyword appears in the snippet description.' });
-                            scorePoints += 10;
-                        } else {
-                            audits.push({ id: 5, status: 'warning', title: 'Keyword Missing from Description', message: 'Include your focus keyword inside the meta description for bold search highlighting.' });
-                        }
-                    }
-
-                    // Audit 6: Keyword in URL Slug
-                    if (focusKeyword && this.slug) {
-                        const cleanSlug = this.slug.replace(/[-_]/g, ' ').toLowerCase();
-                        if (cleanSlug.includes(focusKeyword.toLowerCase())) {
-                            audits.push({ id: 6, status: 'good', title: 'Keyword in URL Slug', message: 'Target keyword is included in the URL slug.' });
-                            scorePoints += 10;
-                        } else {
-                            audits.push({ id: 6, status: 'warning', title: 'Keyword Missing from URL', message: 'Add your primary keyword to the page URL slug.' });
-                        }
-                    }
-
-                    // Audit 7: Content Length & Depth
-                    if (totalWords >= 600) {
-                        audits.push({ id: 7, status: 'good', title: 'Content Depth', message: `Good length (${totalWords} words). Matches standard search intent guidelines.` });
-                        scorePoints += 15;
-                    } else if (totalWords >= 300) {
-                        audits.push({ id: 7, status: 'warning', title: 'Acceptable Content Length', message: `Found ${totalWords} words. Expanding past 600 words improves ranking probability.` });
-                        scorePoints += 8;
-                    } else {
-                        audits.push({ id: 7, status: 'error', title: 'Thin Content', message: `Only ${totalWords} words found. Search engines favor rich, comprehensive resources.` });
-                    }
-
-                    // Audit 8: Keyword Density
-                    if (focusKeyword && totalWords > 0) {
-                        const escapedKw = focusKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                        const matches = (cleanText.toLowerCase().match(new RegExp(escapedKw.toLowerCase(), 'g')) || []).length;
-                        const density = ((matches / totalWords) * 100).toFixed(1);
-
-                        if (density >= 0.8 && density <= 2.5) {
-                            audits.push({ id: 8, status: 'good', title: `Keyword Density (${density}%)`, message: `Optimal keyword usage (${matches} occurrences).` });
-                            scorePoints += 10;
-                        } else if (density > 2.5) {
-                            audits.push({ id: 8, status: 'error', title: `Keyword Stuffing (${density}%)`, message: 'Keyword occurs too frequently. Reduce usage to avoid algorithmic penalties.' });
-                        } else {
-                            audits.push({ id: 8, status: 'warning', title: `Low Keyword Density (${density}%)`, message: `Found ${matches} occurrences. Try naturally including your keyword across subheadings and body.` });
-                            scorePoints += 4;
-                        }
-                    }
-
-                    // Audit 9: Keyword in First 10% / Intro
-                    if (focusKeyword && totalWords > 20) {
-                        const first100Words = words.slice(0, 100).join(' ').toLowerCase();
-                        if (first100Words.includes(focusKeyword.toLowerCase())) {
-                            audits.push({ id: 9, status: 'good', title: 'Keyword in Introduction', message: 'Focus keyword appears within the first paragraph/100 words.' });
-                            scorePoints += 10;
-                        } else {
-                            audits.push({ id: 9, status: 'warning', title: 'Keyword Missing from Intro', message: 'Include your focus keyword in the introductory paragraph.' });
-                        }
-                    }
-
-                    // Audit 10: Headings Structure (H2 / H3)
-                    if (headings.length >= 2) {
-                        audits.push({ id: 10, status: 'good', title: 'Content Hierarchy', message: `Page utilizes ${headings.length} subheadings for clean visual structure.` });
+                        audits.push({ id: 7, category: 'onpage', status: 'warning', title: 'Description Length Suboptimal', message: `Description is ${descLen} characters. Target 120-160 characters.` });
                         scorePoints += 5;
                     } else {
-                        audits.push({ id: 10, status: 'warning', title: 'Missing Subheadings', message: 'Add H2 and H3 subheadings to break up long blocks of text.' });
+                        audits.push({ id: 7, category: 'onpage', status: 'error', title: 'Missing Meta Description', message: 'Add a meta description.' });
                     }
 
-                    // Audit 11: Link Architecture (Internal / External)
-                    if (internalLinks > 0 || externalLinks > 0) {
-                        audits.push({ id: 11, status: 'good', title: 'Link Architecture', message: `Found ${internalLinks} internal and ${externalLinks} external references.` });
+                    if (totalWords >= 300) {
+                        audits.push({ id: 8, category: 'content', status: 'good', title: 'Rich Content Depth', message: `Found ${totalWords} words.` });
+                        scorePoints += 10;
+                    } else if (totalWords >= 150) {
+                        audits.push({ id: 8, category: 'content', status: 'good', title: 'Adequate Word Count', message: `Found ${totalWords} words.` });
                         scorePoints += 5;
                     } else {
-                        audits.push({ id: 11, status: 'warning', title: 'No Outbound/Internal Links', message: 'Add contextual links to related resources or pages.' });
+                        audits.push({ id: 8, category: 'content', status: 'warning', title: 'Short Content', message: `Found ${totalWords} words. Aim for 300+ words.` });
                     }
 
-                    // Audit 12: Image Alt Tags
-                    if (images.length > 0) {
-                        if (imagesWithoutAlt === 0) {
-                            audits.push({ id: 12, status: 'good', title: 'Image Accessibility (ALT)', message: `All ${images.length} images include descriptive ALT text.` });
-                            scorePoints += 5;
-                        } else {
-                            audits.push({ id: 12, status: 'warning', title: 'Missing Image ALT Tags', message: `${imagesWithoutAlt} out of ${images.length} images are missing ALT attributes.` });
-                        }
+                    if (this.metrics.headings >= 1) {
+                        audits.push({ id: 9, category: 'content', status: 'good', title: 'Structured Headings', message: `Found ${this.metrics.headings} headings organizing the content.` });
+                        scorePoints += 5;
+                    } else {
+                        audits.push({ id: 9, category: 'content', status: 'warning', title: 'Add Subheadings', message: 'Use headings to break up sections.' });
                     }
 
-                    // 7. Compute Totals & Color Schemes
+                    const schemaType = metaBlock.schema_type || data.schema_type;
+                    if (schemaType) {
+                        audits.push({ id: 10, category: 'technical', status: 'good', title: `Schema Preset: "${schemaType}"`, message: 'Structured data rich snippet is configured.' });
+                        scorePoints += 5;
+                    }
+
+                    if (this.ogImage) {
+                        audits.push({ id: 11, category: 'technical', status: 'good', title: 'Social Share Graphic', message: 'OpenGraph banner is uploaded.' });
+                        scorePoints += 5;
+                    }
+
                     this.allAudits = audits;
                     this.auditStats.passed = audits.filter(a => a.status === 'good').length;
                     this.auditStats.warnings = audits.filter(a => a.status === 'warning').length;
@@ -413,17 +563,17 @@
                     this.seoScorePercent = Math.min(100, Math.max(0, scorePoints));
 
                     if (this.seoScorePercent >= 80) {
-                        this.seoScoreRating = 'Rank-Ready (Great)';
-                        this.seoScoreColorClass = 'text-emerald-400';
-                        this.seoStrokeColorClass = 'text-emerald-400';
+                        this.seoScoreRating = 'Rank-Ready';
+                        this.seoScoreColorClass = 'text-emerald-600 dark:text-emerald-400';
+                        this.seoStrokeColorClass = 'text-emerald-500';
                     } else if (this.seoScorePercent >= 50) {
-                        this.seoScoreRating = 'Fair (Needs Optimization)';
-                        this.seoScoreColorClass = 'text-amber-400';
-                        this.seoStrokeColorClass = 'text-amber-400';
+                        this.seoScoreRating = 'Needs Optimization';
+                        this.seoScoreColorClass = 'text-amber-600 dark:text-amber-400';
+                        this.seoStrokeColorClass = 'text-amber-500';
                     } else {
-                        this.seoScoreRating = 'Poor (Action Required)';
-                        this.seoScoreColorClass = 'text-rose-400';
-                        this.seoStrokeColorClass = 'text-rose-400';
+                        this.seoScoreRating = 'Action Required';
+                        this.seoScoreColorClass = 'text-rose-600 dark:text-rose-400';
+                        this.seoStrokeColorClass = 'text-rose-500';
                     }
                 }
             }

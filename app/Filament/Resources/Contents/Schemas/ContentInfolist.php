@@ -3,11 +3,17 @@
 namespace App\Filament\Resources\Contents\Schemas;
 
 use App\Models\Content;
+use App\Filament\Forms\Components\SeoAnalyzer;
+use App\Filament\Schemas\PageSeoSchema;
+use App\Filament\Schemas\PageSettingsSchema;
 use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\CodeEntry;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 
 class ContentInfolist
@@ -16,51 +22,39 @@ class ContentInfolist
     {
         return $schema
             ->components([
-                Section::make('Content')->schema([
-                    TextEntry::make('content'),
-                    RepeatableEntry::make('content')
-                        ->hiddenLabel()
-                        ->schema([
-                            TextEntry::make('data.content')
+                Tabs::make()->tabs([
+                    Tab::make('Page')->schema([
+                        Section::make('Content')->schema([
+                            RepeatableEntry::make('content')
                                 ->hiddenLabel()
-                                ->html()
-                                ->prose()
+                                ->schema([
+                                    TextEntry::make('data.content')
+                                        ->hiddenLabel()
+                                        ->html()
+                                        ->prose()
+                                        ->columnSpanFull(),
+                                ])
+                                ->grid(1)
                                 ->columnSpanFull(),
-                        ])
-                        ->grid(1)
-                        ->columnSpanFull(),
-                ])->columnSpan(3),
-                Section::make('Settings')->schema([
-                    TextEntry::make('title'),
-                    TextEntry::make('description'),
-                    TextEntry::make('slug'),
-                    ImageEntry::make('image')
-                        ->placeholder('-'),
-                    IconEntry::make('published')
-                        ->boolean(),
-                    TextEntry::make('published_at')
-                        ->dateTime()
-                        ->placeholder('-'),
-                    TextEntry::make('seo.title')
-                        ->placeholder('-'),
-                    TextEntry::make('seo.description')
-                        ->placeholder('-'),
-                    TextEntry::make('meta')
-                        ->placeholder('-')
-                        ->columnSpanFull(),
-                    TextEntry::make('setting')
-                        ->placeholder('-')
-                        ->columnSpanFull(),
-                    TextEntry::make('created_at')
-                        ->dateTime()
-                        ->placeholder('-'),
-                    TextEntry::make('updated_at')
-                        ->dateTime()
-                        ->placeholder('-'),
-                    TextEntry::make('deleted_at')
-                        ->dateTime()
-                        ->visible(fn (Content $record): bool => $record->trashed()),
+                        ]),
+                    ]),
+                    Tab::make('SEO Analytics')
+                        ->icon('heroicon-o-chart-bar-square')
+                        ->schema([
+                            SeoAnalyzer::make('seo_live_analysis')
+                                ->columnSpanFull(),
+                        ]),
+                    Tab::make('Meta Data')
+                        ->schema([
+                            CodeEntry::make('meta'),
+                        ]),
+                    Tab::make('Settings')
+                        ->schema([
+                            CodeEntry::make('styles'),
+                            CodeEntry::make('setting'),
+                        ]),
                 ]),
-            ])->columns(4);
+
+            ])->columns(1);
     }
 }

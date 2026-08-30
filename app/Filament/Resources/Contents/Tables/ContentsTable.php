@@ -25,14 +25,14 @@ class ContentsTable
                     ->description(fn ($record) => "slug: {$record->slug}" ?? '')
                     ->wrap()
                     ->searchable(),
-                TextColumn::make('description')->sortable()
+                TextColumn::make('meta.description')->sortable()
                     ->limit(100)
                     ->wrap()
                     ->searchable(),
-                ToggleColumn::make('is_frontpage')->label('Frontpage')->sortable(),
-                IconColumn::make('published')
+                ToggleColumn::make('setting.is_frontpage')->label('Frontpage')->sortable(),
+                IconColumn::make('setting.published')
                     ->boolean(),
-                TextColumn::make('published_at')
+                TextColumn::make('setting.published_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

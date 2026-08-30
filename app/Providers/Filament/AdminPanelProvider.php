@@ -11,6 +11,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\Tables\Table;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -57,7 +58,15 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->spa()
             ->maxContentWidth(Width::Full)
-            ->sidebarCollapsibleOnDesktop();
+            ->sidebarFullyCollapsibleOnDesktop()
+            ->bootUsing(function () {
+                Table::configureUsing(function (Table $table): void {
+                    $table->paginated([5, 10, 25, 50])
+                        ->defaultPaginationPageOption(5);
+                });
+            })
+            ->readOnlyRelationManagersOnResourceViewPagesByDefault(false);
     }
 }
