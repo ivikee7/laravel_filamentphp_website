@@ -25,6 +25,7 @@ class ContentInfolist
                 Tabs::make()->tabs([
                     Tab::make('Page')->schema([
                         Section::make('Content')->schema([
+                            CodeEntry::make('content'),
                             RepeatableEntry::make('content')
                                 ->hiddenLabel()
                                 ->schema([

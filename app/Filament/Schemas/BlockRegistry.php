@@ -2,10 +2,10 @@
 
 namespace App\Filament\Schemas;
 
+use Filament\Actions\Action;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\Builder\Block;
 use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Repeater;
@@ -20,13 +20,12 @@ use Filament\Forms\Components\Toggle;
 class BlockRegistry
 {
     /**
-     * Recursive layout containers (strictly depth-controlled to prevent execution timeout).
+     * Recursive layout containers supporting duplication.
      */
     public static function getBlocks(int $depth = 0, int $maxDepth = 1): array
     {
         $leafBlocks = static::getLeafBlocks();
 
-        // When depth limit is reached, return only leaf blocks (no sub-containers)
         if ($depth >= $maxDepth) {
             return $leafBlocks;
         }
@@ -40,15 +39,34 @@ class BlockRegistry
                     Tabs::make('Accordion Config')->schema([
                         Tab::make('Content Items')->schema([
                             Repeater::make('items')
+                                ->label('Accordion Items')
+                                ->collapsible()
+                                ->reorderable()
+                                ->cloneable() // Duplicate Accordion Pane
+                                ->extraItemActions([
+                                    Action::make('duplicateAccordionItem')
+                                        ->icon('heroicon-m-document-duplicate')
+                                        ->tooltip('Duplicate Item')
+                                        ->action(function (array $arguments, Repeater $component): void {
+                                            $state = $component->getState();
+                                            $item = $state[$arguments['item']] ?? null;
+                                            if ($item !== null) {
+                                                $state[] = $item;
+                                                $component->state($state);
+                                            }
+                                        }),
+                                ])
                                 ->schema([
                                     TextInput::make('title')->label('Accordion Header')->required(),
                                     Builder::make('blocks')
                                         ->label('Accordion Content')
                                         ->blockIcons()
                                         ->collapsible()
+                                        ->blockNumbers()
+                                        ->cloneable() // Duplicate nested block inside accordion
                                         ->blockPickerColumns(3)
-                                        ->blocks(static::getLeafBlocks()), // Leaf only inside accordion
-                                ])->collapsible(),
+                                        ->blocks(static::getLeafBlocks()),
+                                ]),
                         ]),
                         Tab::make('Design')->schema([
                             StyleHelper::makeStyleEngine('styles'),
@@ -64,15 +82,34 @@ class BlockRegistry
                     Tabs::make('Tabs Config')->schema([
                         Tab::make('Tab Panes')->schema([
                             Repeater::make('tabs')
+                                ->label('Tab Items')
+                                ->collapsible()
+                                ->reorderable()
+                                ->cloneable() // Duplicate Tab Pane
+                                ->extraItemActions([
+                                    Action::make('duplicateTabItem')
+                                        ->icon('heroicon-m-document-duplicate')
+                                        ->tooltip('Duplicate Tab')
+                                        ->action(function (array $arguments, Repeater $component): void {
+                                            $state = $component->getState();
+                                            $item = $state[$arguments['item']] ?? null;
+                                            if ($item !== null) {
+                                                $state[] = $item;
+                                                $component->state($state);
+                                            }
+                                        }),
+                                ])
                                 ->schema([
                                     TextInput::make('tab_title')->label('Tab Trigger Label')->required(),
                                     Builder::make('blocks')
                                         ->label('Tab Content Area')
                                         ->blockIcons()
                                         ->collapsible()
+                                        ->blockNumbers()
+                                        ->cloneable() // Duplicate nested block inside tab
                                         ->blockPickerColumns(3)
-                                        ->blocks(static::getLeafBlocks()), // Leaf only inside tabs
-                                ])->collapsible(),
+                                        ->blocks(static::getLeafBlocks()),
+                                ]),
                         ]),
                         Tab::make('Design')->schema([
                             StyleHelper::makeStyleEngine('styles'),
@@ -83,12 +120,12 @@ class BlockRegistry
     }
 
     /**
-     * Essential suite of leaf component blocks.
+     * Suite of leaf component blocks with nested repeaters cloneable.
      */
     public static function getLeafBlocks(): array
     {
         return [
-            // --- 1. HERO & BANNERS ---
+            // 1. Hero Banner
             Block::make('hero_section')
                 ->label('Hero Banner')
                 ->icon('heroicon-o-sparkles')
@@ -118,7 +155,7 @@ class BlockRegistry
                     ]),
                 ]),
 
-            // --- 2. TYPOGRAPHY & PROSE ---
+            // 2. Heading
             Block::make('heading')
                 ->label('Heading (Typography)')
                 ->icon('heroicon-o-h1')
@@ -138,6 +175,7 @@ class BlockRegistry
                     ]),
                 ]),
 
+            // 3. Rich Text
             Block::make('rich_text')
                 ->label('Rich Text (Typography)')
                 ->icon('heroicon-o-pencil-square')
@@ -152,6 +190,7 @@ class BlockRegistry
                     ]),
                 ]),
 
+            // 4. Callout Box
             Block::make('callout')
                 ->label('Callout Box (Typography)')
                 ->icon('heroicon-o-exclamation-triangle')
@@ -170,6 +209,7 @@ class BlockRegistry
                     ]),
                 ]),
 
+            // 5. Notice Ticker
             Block::make('notice_ticker')
                 ->label('Notice Ticker (Urgent)')
                 ->icon('heroicon-o-megaphone')
@@ -195,7 +235,7 @@ class BlockRegistry
                     ]),
                 ]),
 
-            // --- 3. MEDIA & VISUALS ---
+            // 6. Image Block
             Block::make('image')
                 ->label('Image Block (Media)')
                 ->icon('heroicon-o-photo')
@@ -216,6 +256,7 @@ class BlockRegistry
                     ]),
                 ]),
 
+            // 7. Gallery Block (Duplicate individual photos)
             Block::make('gallery')
                 ->label('Photo Gallery (Media)')
                 ->icon('heroicon-o-square-3-stack-3d')
@@ -223,10 +264,27 @@ class BlockRegistry
                     Tabs::make('Gallery Settings')->schema([
                         Tab::make('Photos')->schema([
                             Repeater::make('images')
+                                ->label('Photos')
+                                ->collapsible()
+                                ->reorderable()
+                                ->cloneable() // Duplicate single photo item
+                                ->extraItemActions([
+                                    Action::make('duplicateImage')
+                                        ->icon('heroicon-m-document-duplicate')
+                                        ->tooltip('Duplicate Photo')
+                                        ->action(function (array $arguments, Repeater $component): void {
+                                            $state = $component->getState();
+                                            $item = $state[$arguments['item']] ?? null;
+                                            if ($item !== null) {
+                                                $state[] = $item;
+                                                $component->state($state);
+                                            }
+                                        }),
+                                ])
                                 ->schema([
                                     FileUpload::make('image')->disk('public')->directory('gallery')->image()->required(),
                                     TextInput::make('caption')->label('Caption'),
-                                ])->columns(2)->collapsible(),
+                                ])->columns(2),
                             Select::make('columns')->options(['2' => '2 Columns', '3' => '3 Columns', '4' => '4 Columns'])->default('3'),
                         ]),
                         Tab::make('Design')->schema([
@@ -235,6 +293,7 @@ class BlockRegistry
                     ]),
                 ]),
 
+            // 8. Video Embed
             Block::make('video_embed')
                 ->label('Video Embed (Media)')
                 ->icon('heroicon-o-video-camera')
@@ -256,7 +315,7 @@ class BlockRegistry
                     ]),
                 ]),
 
-            // --- 4. MARKETING & CONVERSION ---
+            // 9. CTA Button
             Block::make('button')
                 ->label('CTA Button (Marketing)')
                 ->icon('heroicon-o-cursor-arrow-rays')
@@ -280,6 +339,7 @@ class BlockRegistry
                     ]),
                 ]),
 
+            // 10. Feature Card
             Block::make('feature_card')
                 ->label('Feature Card (Marketing)')
                 ->icon('heroicon-o-cube-transparent')
@@ -300,6 +360,7 @@ class BlockRegistry
                     ]),
                 ]),
 
+            // 11. FAQ Block (Duplicate Question/Answers)
             Block::make('faq_schema')
                 ->label('FAQ Section (Marketing)')
                 ->icon('heroicon-o-question-mark-circle')
@@ -307,10 +368,27 @@ class BlockRegistry
                     Tabs::make('FAQ Settings')->schema([
                         Tab::make('Questions')->schema([
                             Repeater::make('faqs')
+                                ->label('FAQ Items')
+                                ->collapsible()
+                                ->reorderable()
+                                ->cloneable() // Duplicate FAQ row
+                                ->extraItemActions([
+                                    Action::make('duplicateFaq')
+                                        ->icon('heroicon-m-document-duplicate')
+                                        ->tooltip('Duplicate Question')
+                                        ->action(function (array $arguments, Repeater $component): void {
+                                            $state = $component->getState();
+                                            $item = $state[$arguments['item']] ?? null;
+                                            if ($item !== null) {
+                                                $state[] = $item;
+                                                $component->state($state);
+                                            }
+                                        }),
+                                ])
                                 ->schema([
                                     TextInput::make('question')->label('Question')->required(),
                                     Textarea::make('answer')->label('Answer')->rows(3)->required(),
-                                ])->collapsible(),
+                                ]),
                         ]),
                         Tab::make('Design')->schema([
                             StyleHelper::makeStyleEngine('styles'),
