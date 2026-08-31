@@ -1,23 +1,10 @@
-@extends('layouts.app')
+@extends('errors.layout')
 
 @section('title', 'Page Not Found')
-
-@section('content')
-    <div class="min-h-[60vh] flex flex-col items-center justify-center text-center py-12">
-        <div class="bg-indigo-50 text-indigo-600 font-extrabold text-7xl rounded-2xl px-6 py-4 mb-6 shadow-sm">
-            404
-        </div>
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-3">Page Not Found</h1>
-        <p class="text-gray-600 max-w-md mb-8">
-            Sorry, the page or content you are looking for does not exist or has been moved.
-        </p>
-        <div class="flex items-center gap-4">
-            <a href="{{ route('home') }}" class="bg-indigo-600 text-white font-medium px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition">
-                Go to Homepage
-            </a>
-            <a href="{{ route('content.index') }}" class="bg-white border border-gray-300 text-gray-700 font-medium px-5 py-2.5 rounded-lg hover:bg-gray-50 transition">
-                Browse All Content
-            </a>
-        </div>
-    </div>
+@section('code', '404')
+@section('icon')
+    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
 @endsection
+@section('message', 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.')

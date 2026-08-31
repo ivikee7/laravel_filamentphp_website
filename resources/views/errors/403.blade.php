@@ -1,18 +1,10 @@
-@extends('layouts.app')
+@extends('errors.layout')
 
-@section('title', 'Access Denied')
-
-@section('content')
-    <div class="min-h-[60vh] flex flex-col items-center justify-center text-center py-12">
-        <div class="bg-amber-50 text-amber-600 font-extrabold text-7xl rounded-2xl px-6 py-4 mb-6 shadow-sm">
-            403
-        </div>
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-3">Access Forbidden</h1>
-        <p class="text-gray-600 max-w-md mb-8">
-            You do not have permission to access this page or resource.
-        </p>
-        <a href="{{ route('home') }}" class="bg-indigo-600 text-white font-medium px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition">
-            Return Home
-        </a>
-    </div>
+@section('title', 'Access Forbidden')
+@section('code', '403')
+@section('icon')
+    <svg class="w-10 h-10 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    </svg>
 @endsection
+@section('message', 'You do not have permission to access this resource or request was blocked by security policies.')
