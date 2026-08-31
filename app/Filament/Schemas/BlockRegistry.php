@@ -31,7 +31,89 @@ class BlockRegistry
         }
 
         return array_merge($leafBlocks, [
-            // Container 1: Accordion System
+            // Container 1: Universal Carousel / Slider Block
+            Block::make('slider_container')
+                ->label('Slider / Carousel (Layout)')
+                ->icon('heroicon-o-presentation-chart-bar')
+                ->schema([
+                    Tabs::make('Slider Setup')->schema([
+                        Tab::make('Slide Items')->schema([
+                            Repeater::make('slides')
+                                ->label('Slides')
+                                ->collapsible()
+                                ->reorderable()
+                                ->cloneable()
+                                ->itemLabel(fn (array $state, string $uuid): ?string => 'Slide Frame #' . substr($uuid, 0, 4))
+                                ->extraItemActions([
+                                    Action::make('duplicateSlide')
+                                        ->icon('heroicon-m-document-duplicate')
+                                        ->tooltip('Duplicate Slide')
+                                        ->action(function (array $arguments, Repeater $component): void {
+                                            $state = $component->getState();
+                                            $item = $state[$arguments['item']] ?? null;
+                                            if ($item !== null) {
+                                                $state[] = $item;
+                                                $component->state($state);
+                                            }
+                                        }),
+                                ])
+                                ->schema([
+                                    Builder::make('blocks')
+                                        ->label('Slide Contents (Banners, Rows, Media, etc.)')
+                                        ->blockIcons()
+                                        ->collapsible()
+                                        ->blockNumbers()
+                                        ->cloneable()
+                                        ->blockPickerColumns(3)
+                                        ->blocks(static::getLeafBlocks()),
+                                ]),
+                        ]),
+
+                        Tab::make('Slider Controls')->schema([
+                            Grid::make(3)->schema([
+                                Select::make('slides_per_view')
+                                    ->label('Visible Slides per View')
+                                    ->options([
+                                        '1' => '1 Slide (Full Banner Hero)',
+                                        '2' => '2 Slides (Cards / Columns)',
+                                        '3' => '3 Slides (Showcase)',
+                                        '4' => '4 Slides (Logos / Features)',
+                                    ])->default('1'),
+
+                                Select::make('slider_gap')
+                                    ->label('Gap Between Slides')
+                                    ->options([
+                                        'gap-0' => '0px',
+                                        'gap-4' => '16px',
+                                        'gap-6' => '24px',
+                                        'gap-8' => '32px',
+                                    ])->default('gap-6'),
+
+                                Select::make('autoplay_speed')
+                                    ->label('Autoplay Interval')
+                                    ->options([
+                                        '0'    => 'Off (Manual Slide Only)',
+                                        '3000' => '3 Seconds',
+                                        '5000' => '5 Seconds (Recommended)',
+                                        '7000' => '7 Seconds',
+                                        '10000'=> '10 Seconds',
+                                    ])->default('5000'),
+                            ]),
+
+                            Grid::make(3)->schema([
+                                Toggle::make('show_arrows')->label('Show Prev/Next Arrows')->default(true),
+                                Toggle::make('show_dots')->label('Show Bottom Pagination Dots')->default(true),
+                                Toggle::make('loop')->label('Infinite Loop Rotation')->default(true),
+                            ]),
+                        ]),
+
+                        Tab::make('Design')->schema([
+                            StyleHelper::makeStyleEngine('styles'),
+                        ]),
+                    ]),
+                ]),
+
+            // Container 2: Accordion System
             Block::make('accordion_container')
                 ->label('Accordion (Layout)')
                 ->icon('heroicon-o-chevron-down')
@@ -42,7 +124,7 @@ class BlockRegistry
                                 ->label('Accordion Items')
                                 ->collapsible()
                                 ->reorderable()
-                                ->cloneable() // Duplicate Accordion Pane
+                                ->cloneable()
                                 ->extraItemActions([
                                     Action::make('duplicateAccordionItem')
                                         ->icon('heroicon-m-document-duplicate')
@@ -63,7 +145,7 @@ class BlockRegistry
                                         ->blockIcons()
                                         ->collapsible()
                                         ->blockNumbers()
-                                        ->cloneable() // Duplicate nested block inside accordion
+                                        ->cloneable()
                                         ->blockPickerColumns(3)
                                         ->blocks(static::getLeafBlocks()),
                                 ]),
@@ -74,7 +156,7 @@ class BlockRegistry
                     ]),
                 ]),
 
-            // Container 2: Tabbed Panes
+            // Container 3: Tabbed Panes
             Block::make('tabs_container')
                 ->label('Tab Group (Layout)')
                 ->icon('heroicon-o-folder')
@@ -85,7 +167,7 @@ class BlockRegistry
                                 ->label('Tab Items')
                                 ->collapsible()
                                 ->reorderable()
-                                ->cloneable() // Duplicate Tab Pane
+                                ->cloneable()
                                 ->extraItemActions([
                                     Action::make('duplicateTabItem')
                                         ->icon('heroicon-m-document-duplicate')
@@ -106,7 +188,7 @@ class BlockRegistry
                                         ->blockIcons()
                                         ->collapsible()
                                         ->blockNumbers()
-                                        ->cloneable() // Duplicate nested block inside tab
+                                        ->cloneable()
                                         ->blockPickerColumns(3)
                                         ->blocks(static::getLeafBlocks()),
                                 ]),
@@ -120,7 +202,7 @@ class BlockRegistry
     }
 
     /**
-     * Suite of leaf component blocks with nested repeaters cloneable.
+     * Suite of leaf component blocks.
      */
     public static function getLeafBlocks(): array
     {
@@ -256,7 +338,7 @@ class BlockRegistry
                     ]),
                 ]),
 
-            // 7. Gallery Block (Duplicate individual photos)
+            // 7. Gallery Block
             Block::make('gallery')
                 ->label('Photo Gallery (Media)')
                 ->icon('heroicon-o-square-3-stack-3d')
@@ -267,7 +349,7 @@ class BlockRegistry
                                 ->label('Photos')
                                 ->collapsible()
                                 ->reorderable()
-                                ->cloneable() // Duplicate single photo item
+                                ->cloneable()
                                 ->extraItemActions([
                                     Action::make('duplicateImage')
                                         ->icon('heroicon-m-document-duplicate')
@@ -360,7 +442,7 @@ class BlockRegistry
                     ]),
                 ]),
 
-            // 11. FAQ Block (Duplicate Question/Answers)
+            // 11. FAQ Block
             Block::make('faq_schema')
                 ->label('FAQ Section (Marketing)')
                 ->icon('heroicon-o-question-mark-circle')
@@ -371,7 +453,7 @@ class BlockRegistry
                                 ->label('FAQ Items')
                                 ->collapsible()
                                 ->reorderable()
-                                ->cloneable() // Duplicate FAQ row
+                                ->cloneable()
                                 ->extraItemActions([
                                     Action::make('duplicateFaq')
                                         ->icon('heroicon-m-document-duplicate')

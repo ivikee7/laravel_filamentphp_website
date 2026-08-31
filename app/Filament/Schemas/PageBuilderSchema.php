@@ -135,9 +135,9 @@ class PageBuilderSchema
                                                                                 ->blockIcons()
                                                                                 ->collapsible()
                                                                                 ->blockNumbers()
-                                                                                ->cloneable() // 4. Element Duplication
+                                                                                ->cloneable()
                                                                                 ->blockPickerColumns(3)
-                                                                                ->blocks(BlockRegistry::getLeafBlocks()),
+                                                                                ->blocks(BlockRegistry::getBlocks(depth: 0, maxDepth: 2)), // Allow Slider/Accordion/Tabs inside columns
                                                                         ]),
 
                                                                     Tab::make('Column Styles')
